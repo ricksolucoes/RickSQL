@@ -1,0 +1,10 @@
+{
+	"name": "RickSQL",
+	"description": "Delphi 10+ FireDAC framework for executing SQL queries and commands through a unified API, with a simple facade and fluent interface. Abstracts connections, drivers, parameters, transactions, and disconnected datasets, with support for 13 databases including SQLite, Firebird, PostgreSQL, SQL Server, MySQL, Oracle, and ODBC.",
+	"version": "0.1.0",
+	"homepage": "ricksolucoes.dev",
+	"mainsrc": "./src",
+	"browsingpath": "",
+	"projects": [],
+	"dependencies": {}
+}
