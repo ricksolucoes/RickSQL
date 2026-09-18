@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Define quality criteria that keep RickSQL code simple, readable, testable, and clearly separated by responsibility across the `model`, `core`, `services`, and `services/drivers` layers.
+Define quality criteria that keep RickSQL code simple, readable, testable, and clearly separated by responsibility across `model`, `error`, `core`, `services`, and `services/drivers`.
 
 This document distinguishes two kinds of information:
 
@@ -55,7 +55,8 @@ In the current code, the following responsibilities are centralized:
 - parameter binding — `Rick.SQL.Service.FireDAC.Parameter.Binder`;
 - commit and rollback — `Rick.SQL.Service.FireDAC.Transaction`;
 - dataset materialization — `Rick.SQL.Core.DataSet.Materializer`;
-- conversion of exceptions into structured errors — `Rick.SQL.Core.Error.Parser`;
+- shared exception normalization, sanitization, and technical metadata extraction — `Rick.SQL.Error.Normalizer` under `src/error`;
+- fixed user-facing messages for core flows — `Rick.SQL.Core.Error.Parser`, which delegates technical normalization;
 - driver-context resolution — `Rick.SQL.Core.Driver.Context.Factory`, reused by the `Open` and `Execute` executors.
 
 These centralizations are observable characteristics of the current architecture. Any future change should be reassessed against the code rather than against this list in isolation.
@@ -70,7 +71,7 @@ New or modified Delphi code must consider:
 - `Cyclomatic Complexity`;
 - composite `Toxicity`, when measured by RAD Studio.
 
-For this project, the existing documentation policy uses `Length = 20` and the preference for at most two simple parameters as stricter limits. For metrics not replaced by a project-specific policy, use the thresholds configured in the environment/project or the engineering baseline adopted by the project.
+For this project, the existing documentation policy uses `Length = 20` as a limit and prefers methods with at most two simple parameters when that preserves cohesion. This design preference does not automatically replace the `Parameters` threshold defined by the project, the user, or, when neither exists, the engineering baseline. For the remaining metrics, use the thresholds configured in the environment/project or the engineering baseline adopted by the project.
 
 ### Real measurement vs. static analysis
 
@@ -128,7 +129,7 @@ uses
   Rick.SQL.Model.Command;
 ```
 
-The `model` layer must not depend on `core` or `services`. The `Rick.SQL` facade keeps the executors in its `implementation` section, preventing those dependencies from becoming part of the public contract.
+The `model` area must not depend on `error`, `core`, or `services`. `Rick.SQL.Error.Normalizer` depends on `model` types and the FireDAC APIs required for metadata extraction, but it does not depend on `core` or `services`; this allows both `core` and `services` to share the same normalization policy without introducing a `services -> core` dependency. The `Rick.SQL` facade keeps the executors in its `implementation` section, preventing those dependencies from becoming part of the public contract.
 
 ## Unit responsibility
 
@@ -158,7 +159,7 @@ User-facing messages controlled by the framework are kept in Brazilian Portugues
 
 ## Message security
 
-`Rick.SQL.Core.Error.Parser` masks values associated with the following keys:
+`Rick.SQL.Error.Normalizer` masks values associated with the following keys:
 
 - `Password=`;
 - `PWD=`;
@@ -167,7 +168,7 @@ User-facing messages controlled by the framework are kept in Brazilian Portugues
 - `User Password=`;
 - `User_Password=`.
 
-The detected value is replaced with `***` in the sanitized technical detail. This mechanism does not authorize logging full connection strings or sensitive parameters outside the parser.
+The detected value is replaced with `***` in textual error surfaces processed by the normalizer. This mechanism does not authorize logging full connection strings or sensitive parameters outside the normalization policy.
 
 ## Per-method checklist
 
@@ -192,7 +193,8 @@ The detected value is replaced with `***` in the sanitized technical detail. Thi
 [ ] Public types follow the established naming convention (TRickSQL*/IRickSQL*).
 [ ] The unit responsibility is clear.
 [ ] Uses contains only required dependencies and respects layer direction.
-[ ] Model does not depend on core/services.
+[ ] Model does not depend on error/core/services.
+[ ] Error normalizer does not depend on core/services.
 [ ] The core creates no visual components.
 [ ] The FireDAC Wait dependency respects CONSOLE_CONNECTION when applicable.
 [ ] No mutable global state is introduced without explicit justification.

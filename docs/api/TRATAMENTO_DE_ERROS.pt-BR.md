@@ -26,7 +26,7 @@ None, Validation, UnsupportedDatabase, Driver, ClientLibrary,
 Connection, Command, Parameter, Transaction, DataSet, Unexpected
 ```
 
-Cada categoria é convertida por `Rick.SQL.Core.Error.Parser` em uma mensagem amigável fixa, controlada pelo framework:
+Nos fluxos que usam `Rick.SQL.Core.Error.Parser`, cada categoria é convertida em uma mensagem amigável fixa, controlada pelo framework. O parser preserva essa responsabilidade contextual e delega a normalização técnica ao componente compartilhado `Rick.SQL.Error.Normalizer`, localizado em `src/error`:
 
 | Categoria | Mensagem amigável |
 |---|---|
@@ -43,17 +43,23 @@ Cada categoria é convertida por `Rick.SQL.Core.Error.Parser` em uma mensagem am
 
 Erros de validação (`Rick.SQL.Core.Connection.Validator`, `Rick.SQL.Core.Command.Validator`, `Rick.SQL.Core.Parameter.Validator`) não usam essa tabela fixa: eles constroem a mensagem amigável diretamente, de forma específica para cada regra violada (por exemplo, "O comando SQL não foi informado." ou "A porta deve estar entre 1 e 65535 ou permanecer com o valor zero.").
 
+## Normalização compartilhada
+
+`Rick.SQL.Error.Normalizer`, fisicamente localizado em `src/error/Rick.SQL.Error.Normalizer.pas`, é a autoridade compartilhada para transformar uma exception em dados técnicos de `TRickSQLError`. O componente que captura a falha continua responsável pelo contexto funcional (`Kind`, `Message` e `Operation`); o normalizador não conhece services específicos nem operações de negócio.
+
+Nos fluxos que passam pelo normalizador, ele concentra a obtenção e o tratamento de `TechnicalDetail`, a sanitização das superfícies textuais e a extração de metadados estruturados do FireDAC. `Rick.SQL.Core.Error.Parser` permanece responsável pelas mensagens amigáveis fixas utilizadas pelos fluxos de core e delega essa normalização compartilhada.
+
 ## Detalhe técnico
 
-O campo `TechnicalDetail` pode preservar a mensagem original do FireDAC ou do banco de dados (`EFDDBEngineException.Errors[0].Message`, quando disponível, ou `Exception.Message` como alternativa). Esse conteúdo pode aparecer em outro idioma, pois é produzido por um fornecedor externo, e deve ser usado apenas para diagnóstico técnico — nunca como mensagem principal ao usuário final. Quando nenhum detalhe está disponível, o framework preenche `TechnicalDetail` com o texto fixo "Nenhum detalhe técnico foi informado.".
+O campo `TechnicalDetail` pode preservar a mensagem original do FireDAC ou do banco de dados (`EFDDBEngineException.Errors[0].Message`, quando disponível, ou `Exception.Message` como alternativa). Esse conteúdo pode aparecer em outro idioma, pois é produzido por um fornecedor externo, e deve ser usado apenas para diagnóstico técnico — nunca como mensagem principal ao usuário final. Quando nenhum detalhe está disponível, o normalizador preenche `TechnicalDetail` com o texto fixo "Nenhum detalhe técnico foi informado.".
 
 ## Código do banco (`DBMSCode`)
 
-Quando a exceção capturada é uma `EFDDBEngineException` com pelo menos um erro em `Errors`, `DBMSCode` é preenchido com `Errors[0].ErrorCode`. Caso contrário, permanece em `0`.
+Quando a exception normalizada é uma `EFDDBEngineException` com pelo menos um erro em `Errors`, `DBMSCode` é preenchido com `Errors[0].ErrorCode`. Caso contrário, permanece em `0`.
 
 ## Segurança e mascaramento de credenciais
 
-O parser de erros nunca expõe, no detalhe técnico, os valores associados às seguintes chaves (comparação sem diferenciar maiúsculas de minúsculas): `Password=`, `PWD=`, `Pass=`, `Senha=`, `User Password=`, `User_Password=`. O valor localizado após a chave, até o próximo delimitador (`;`, `,`, quebra de linha), é substituído por `***`.
+O normalizador compartilhado mascara, em `Message` e `TechnicalDetail` processados por ele, valores associados às seguintes chaves (comparação sem diferenciar maiúsculas de minúsculas): `Password=`, `PWD=`, `Pass=`, `Senha=`, `User Password=`, `User_Password=`. O valor localizado após a chave, até o próximo delimitador (`;`, `,`, quebra de linha), é substituído por `***`.
 
 Exemplo de detalhe técnico após o mascaramento:
 

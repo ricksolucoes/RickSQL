@@ -4,7 +4,7 @@
 
 ## Objetivo
 
-Definir critérios de qualidade para manter o código do `RickSQL` simples, legível, testável e com responsabilidades bem separadas nas camadas `model`, `core`, `services` e `services/drivers`.
+Definir critérios de qualidade para manter o código do `RickSQL` simples, legível, testável e com responsabilidades bem separadas entre `model`, `error`, `core`, `services` e `services/drivers`.
 
 Este documento separa duas categorias de informação:
 
@@ -55,7 +55,8 @@ No código atual, as responsabilidades abaixo estão centralizadas:
 - aplicação de parâmetros — `Rick.SQL.Service.FireDAC.Parameter.Binder`;
 - commit e rollback — `Rick.SQL.Service.FireDAC.Transaction`;
 - materialização do dataset — `Rick.SQL.Core.DataSet.Materializer`;
-- conversão de exceptions em erro estruturado — `Rick.SQL.Core.Error.Parser`;
+- normalização compartilhada de exceptions, sanitização e metadados técnicos — `Rick.SQL.Error.Normalizer`, em `src/error`;
+- mensagens amigáveis fixas dos fluxos de core — `Rick.SQL.Core.Error.Parser`, que delega a normalização técnica;
 - resolução do contexto do driver — `Rick.SQL.Core.Driver.Context.Factory`, reutilizada pelos executores de `Open` e `Execute`.
 
 Essas centralizações são características observáveis da arquitetura atual; qualquer alteração futura deve ser reavaliada contra o código, não contra esta lista isoladamente.
@@ -70,7 +71,7 @@ Código Delphi novo ou alterado deve considerar:
 - `Cyclomatic Complexity`;
 - `Toxicity` composto, quando medido pelo RAD Studio.
 
-Para este projeto, a política documental existente usa `Length = 20` e a preferência de até dois parâmetros simples como limites mais restritivos. Para métricas não substituídas por política específica do projeto, devem ser utilizados os thresholds configurados no ambiente/projeto ou a baseline adotada pela engenharia do projeto.
+Para este projeto, a política documental existente usa `Length = 20` como limite e prefere métodos com até dois parâmetros simples quando isso preserva a coesão. Essa preferência de design não substitui automaticamente o threshold de `Parameters` definido pelo projeto, pelo usuário ou, na ausência deles, pela baseline de engenharia. Para as demais métricas, devem ser utilizados os thresholds configurados no ambiente/projeto ou a baseline adotada pela engenharia do projeto.
 
 ### Medição real x análise estática
 
@@ -83,6 +84,22 @@ Sem essa execução:
 - não se deve registrar “Method Toxicity Metrics aprovado” como resultado real.
 
 A regra mínima para qualquer alteração Delphi é não introduzir nova toxicidade e não agravar toxicidade preexistente fora do escopo autorizado.
+
+### Medição real registrada — `RickSQL.NewTests.dproj`
+
+Em **18/09/2026**, o RAD Studio **Delphi 12 Community Edition** executou `Project > Method Toxicity Metrics` para `RickSQL.NewTests.dproj`, com alvo **Windows 32-bit**. Na grade exibida, os maiores valores observados foram:
+
+| Métrica | Maior valor observado |
+|---|---:|
+| `Length` | 14 |
+| `Parameters` | 3 |
+| `If Depth` | 1 |
+| `Cyclomatic Complexity` | 3 |
+| `Toxicity` | 0,292 |
+
+Nenhum método listado atingiu o threshold oficial de `Toxicity = 1`. Portanto, **não foi observada violação de Toxicity no projeto de testes medido**. O máximo de `Parameters = 3` permanece abaixo da baseline de 6; ele apenas ultrapassa a preferência de design por até dois parâmetros simples e, isoladamente, não representa violação do threshold oficial de Toxicity.
+
+Essa medição é específica de `RickSQL.NewTests.dproj`. Ela não deve ser apresentada como medição real das units de produção em `src/` nem da suíte legada `tests/` sem executar a ferramenta nesses projetos/units correspondentes.
 
 ## Código morto
 
@@ -128,7 +145,7 @@ uses
   Rick.SQL.Model.Command;
 ```
 
-A camada `model` não deve depender de `core` ou `services`. A fachada `Rick.SQL` mantém os executores na seção `implementation`, evitando expor essas dependências como parte de seu contrato público.
+A área `model` não deve depender de `error`, `core` ou `services`. `Rick.SQL.Error.Normalizer` depende dos tipos de `model` e das APIs FireDAC necessárias à extração de metadados, mas não depende de `core` nem de `services`; assim, `core` e `services` podem compartilhar a mesma política de normalização sem introduzir `services -> core`. A fachada `Rick.SQL` mantém os executores na seção `implementation`, evitando expor essas dependências como parte de seu contrato público.
 
 ## Responsabilidade das units
 
@@ -158,7 +175,7 @@ Mensagens amigáveis controladas pelo framework são mantidas em português do B
 
 ## Segurança nas mensagens
 
-`Rick.SQL.Core.Error.Parser` mascara valores associados às chaves:
+`Rick.SQL.Error.Normalizer` mascara valores associados às chaves:
 
 - `Password=`;
 - `PWD=`;
@@ -167,7 +184,7 @@ Mensagens amigáveis controladas pelo framework são mantidas em português do B
 - `User Password=`;
 - `User_Password=`.
 
-O valor encontrado é substituído por `***` no detalhe técnico sanitizado. Esse mecanismo não autoriza registrar strings de conexão completas ou parâmetros sensíveis fora do parser.
+O valor encontrado é substituído por `***` nas superfícies textuais processadas pelo normalizador. Esse mecanismo não autoriza registrar strings de conexão completas ou parâmetros sensíveis fora da política de normalização.
 
 ## Checklist por método
 
@@ -192,7 +209,8 @@ O valor encontrado é substituído por `***` no detalhe técnico sanitizado. Ess
 [ ] Tipos públicos seguem a nomenclatura já estabelecida (TRickSQL*/IRickSQL*).
 [ ] Responsabilidade da unit está clara.
 [ ] Uses contêm somente dependências necessárias e respeitam a direção de camadas.
-[ ] Model não depende de core/services.
+[ ] Model não depende de error/core/services.
+[ ] Error normalizer não depende de core/services.
 [ ] Não existem componentes visuais criados pelo núcleo.
 [ ] Dependência de Wait do FireDAC respeita CONSOLE_CONNECTION quando aplicável.
 [ ] Não existe estado global mutável introduzido sem justificativa explícita.

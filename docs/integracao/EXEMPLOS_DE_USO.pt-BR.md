@@ -11,6 +11,7 @@ Antes de compilar qualquer exemplo, adicione ao `Library Path` ou `Search Path` 
 ```text
 RickSQL\src
 RickSQL\src\model
+RickSQL\src\error
 RickSQL\src\core
 RickSQL\src\services
 RickSQL\src\services\drivers

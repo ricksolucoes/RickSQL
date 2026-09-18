@@ -97,4 +97,4 @@ LConnection.AddExtraParameter('Encrypt', 'No');
 
 ## Security
 
-`Password` is used only when building the actual database connection. Framework-controlled user-facing messages and the technical detail produced by `Rick.SQL.Core.Error.Parser` automatically mask values associated with sensitive keys (`Password=`, `PWD=`, `Pass=`, `Senha=`, `User Password=`, `User_Password=`), replacing the value with `***`. See [`TRATAMENTO_DE_ERROS.md`](TRATAMENTO_DE_ERROS.md) for full details of this mechanism.
+`Password` is used only when building the actual database connection. Messages and technical details processed by `Rick.SQL.Error.Normalizer` automatically mask values associated with sensitive keys (`Password=`, `PWD=`, `Pass=`, `Senha=`, `User Password=`, `User_Password=`), replacing the value with `***`. The shared normalizer is located under `src/error`. See [`TRATAMENTO_DE_ERROS.md`](TRATAMENTO_DE_ERROS.md) for full details of this mechanism.

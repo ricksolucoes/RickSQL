@@ -50,7 +50,8 @@ uses
   System.SysUtils,
 
   // RickSQL
-  Rick.SQL.Model.Types;
+  Rick.SQL.Model.Types,
+  Rick.SQL.Error.Normalizer;
 
 const
   _OPERATION_ = 'Criação da sessão FireDAC';
@@ -76,7 +77,8 @@ begin
     MarkReady;
   except
     on E: Exception do
-      FError := CreateSessionError(_ERROR_SESSION_NOT_CREATED_, E.Message);
+      FError := TRickSQLErrorNormalizer.FromException(E,
+        TRickSQLErrorKind.Connection, _ERROR_SESSION_NOT_CREATED_, _OPERATION_);
   end;
 end;
 
@@ -93,9 +95,8 @@ end;
 class function TRickSQLServiceFireDACSession.CreateSessionError(
   const AMessage: string; const ADetail: string): TRickSQLError;
 begin
-  Result := TRickSQLError.Create(TRickSQLErrorKind.Connection, AMessage);
-  Result.TechnicalDetail := ADetail;
-  Result.Operation := _OPERATION_;
+  Result := TRickSQLErrorNormalizer.FromDetail(TRickSQLErrorKind.Connection,
+    AMessage, ADetail, _OPERATION_);
 end;
 
 procedure TRickSQLServiceFireDACSession.InitializeState;

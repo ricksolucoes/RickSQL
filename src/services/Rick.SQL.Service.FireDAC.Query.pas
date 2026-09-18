@@ -51,7 +51,8 @@ uses
   System.SysUtils,
 
   // RickSQL
-  Rick.SQL.Model.Types;
+  Rick.SQL.Model.Types,
+  Rick.SQL.Error.Normalizer;
 
 const
   _OPERATION_CONFIGURE_ = 'Configuração da query FireDAC';
@@ -94,7 +95,9 @@ begin
     Result := True;
   except
     on E: Exception do
-      AError := CreateQueryError(_ERROR_CONFIGURE_QUERY_, E.Message);
+      AError := TRickSQLErrorNormalizer.FromException(E,
+        TRickSQLErrorKind.Command, _ERROR_CONFIGURE_QUERY_,
+        _OPERATION_CONFIGURE_);
   end;
 end;
 
@@ -124,8 +127,8 @@ begin
   except
     on E: Exception do
     begin
-      AError := CreateQueryError(_ERROR_PREPARE_QUERY_, E.Message);
-      AError.Operation := _OPERATION_PREPARE_;
+      AError := TRickSQLErrorNormalizer.FromException(E,
+        TRickSQLErrorKind.Command, _ERROR_PREPARE_QUERY_, _OPERATION_PREPARE_);
       Result := False;
     end;
   end;
@@ -134,9 +137,8 @@ end;
 class function TRickSQLServiceFireDACQuery.CreateQueryError(
   const AMessage: string; const ADetail: string): TRickSQLError;
 begin
-  Result := TRickSQLError.Create(TRickSQLErrorKind.Command, AMessage);
-  Result.TechnicalDetail := ADetail;
-  Result.Operation := _OPERATION_CONFIGURE_;
+  Result := TRickSQLErrorNormalizer.FromDetail(TRickSQLErrorKind.Command,
+    AMessage, ADetail, _OPERATION_CONFIGURE_);
 end;
 
 class function TRickSQLServiceFireDACQuery.ValidateSetup(

@@ -25,7 +25,7 @@ None, Validation, UnsupportedDatabase, Driver, ClientLibrary,
 Connection, Command, Parameter, Transaction, DataSet, Unexpected
 ```
 
-`Rick.SQL.Core.Error.Parser` maps each category to a fixed user-facing message controlled by the framework. The strings below are shown exactly as produced by the current implementation and therefore remain in Brazilian Portuguese:
+In flows that use `Rick.SQL.Core.Error.Parser`, each category is mapped to a fixed user-facing message controlled by the framework. The parser retains that contextual responsibility and delegates technical normalization to the shared `Rick.SQL.Error.Normalizer` component under `src/error`. The strings below are shown exactly as produced by the current implementation and therefore remain in Brazilian Portuguese:
 
 | Category | Framework message (pt-BR) |
 |---|---|
@@ -42,17 +42,23 @@ Connection, Command, Parameter, Transaction, DataSet, Unexpected
 
 Validation errors (`Rick.SQL.Core.Connection.Validator`, `Rick.SQL.Core.Command.Validator`, `Rick.SQL.Core.Parameter.Validator`) do not use that fixed table. They build user-facing messages directly for each violated rule, such as `"O comando SQL não foi informado."` or `"A porta deve estar entre 1 e 65535 ou permanecer com o valor zero."`.
 
+## Shared normalization
+
+`Rick.SQL.Error.Normalizer`, physically located at `src/error/Rick.SQL.Error.Normalizer.pas`, is the shared authority for turning an exception into the technical data of a `TRickSQLError`. The component that captures the failure remains responsible for functional context (`Kind`, `Message`, and `Operation`); the normalizer does not know specific services or business operations.
+
+For flows routed through the normalizer, it centralizes `TechnicalDetail` extraction and treatment, sanitization of textual error surfaces, and extraction of structured FireDAC metadata. `Rick.SQL.Core.Error.Parser` remains responsible for the fixed user-facing messages used by core flows and delegates shared normalization to this component.
+
 ## Technical detail
 
-`TechnicalDetail` may preserve the original FireDAC or database message (`EFDDBEngineException.Errors[0].Message`, when available, or `Exception.Message` as a fallback). This content may appear in another language because it is produced by an external vendor and should be used only for technical diagnostics, never as the primary message shown to an end user. When no detail is available, the framework fills `TechnicalDetail` with the fixed string `"Nenhum detalhe técnico foi informado."`.
+`TechnicalDetail` may preserve the original FireDAC or database message (`EFDDBEngineException.Errors[0].Message`, when available, or `Exception.Message` as a fallback). This content may appear in another language because it is produced by an external vendor and should be used only for technical diagnostics, never as the primary message shown to an end user. When no detail is available, the normalizer fills `TechnicalDetail` with the fixed string `"Nenhum detalhe técnico foi informado."`.
 
 ## Database code (`DBMSCode`)
 
-When the captured exception is an `EFDDBEngineException` with at least one entry in `Errors`, `DBMSCode` is populated from `Errors[0].ErrorCode`. Otherwise, it remains `0`.
+When the normalized exception is an `EFDDBEngineException` with at least one entry in `Errors`, `DBMSCode` is populated from `Errors[0].ErrorCode`. Otherwise, it remains `0`.
 
 ## Security and credential masking
 
-The error parser never exposes, in the technical detail, values associated with the following keys (case-insensitive comparison): `Password=`, `PWD=`, `Pass=`, `Senha=`, `User Password=`, `User_Password=`. The value after the key, up to the next delimiter (`;`, `,`, or line break), is replaced with `***`.
+The shared normalizer masks, in `Message` and `TechnicalDetail` values processed by it, values associated with the following keys (case-insensitive comparison): `Password=`, `PWD=`, `Pass=`, `Senha=`, `User Password=`, `User_Password=`. The value after the key, up to the next delimiter (`;`, `,`, or line break), is replaced with `***`.
 
 Example technical detail after masking:
 

@@ -9,6 +9,7 @@ The executable projects are located under [`tests/integracao`](../../tests/integ
 ```text
 RickSQL\src
 RickSQL\src\model
+RickSQL\src\error
 RickSQL\src\core
 RickSQL\src\services
 RickSQL\src\services\drivers

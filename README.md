@@ -56,6 +56,7 @@ If you prefer a manual installation, add the following folders to your project u
 ```text
 RickSQL\src
 RickSQL\src\model
+RickSQL\src\error
 RickSQL\src\core
 RickSQL\src\services
 RickSQL\src\services\drivers
@@ -164,7 +165,8 @@ RickSQL/
 ├── LICENSE
 ├── LICENSE-pt-BR
 ├── src/       # Delphi implementation and contracts
-├── tests/     # compilation, unit, integration, memory, and concurrency projects
+├── NewTests/  # official suite for new refactorings: DUnit + GUI Test Runner
+├── tests/     # legacy compilation, unit, integration, memory, and concurrency suite
 ├── samples/   # executable examples
 └── docs/      # centralized technical documentation
 ```
@@ -189,9 +191,9 @@ Detailed documentation is not distributed across `tests` and `samples`; the cano
 
 ## 🧪 Tests
 
-Tests remain under `tests/`, separated into compilation, unit, integration, memory, and concurrency projects. Their documentation is centralized under [`docs/testes`](docs/testes/README.md).
+The official suite for new refactorings and behavioral fixes lives under `NewTests/` and uses DUnit with the GUI Test Runner. The exception-normalization test units are organized under `NewTests/src/Error/`, while the project and runner remain at the root of `NewTests/`. The `tests/` tree remains as the legacy suite and reference material; `NewTests/` does not structurally depend on it.
 
-The presence of test projects does not imply that they have been executed in the current environment. Build, execution, leak, or validation results must be reported only when they have been actually run with the corresponding Delphi environment.
+The recorded execution of the current suite on Delphi 12 Community Edition, targeting Windows 32-bit, ran **14 of 14 tests** with **0 failures** and **0 errors**. Documentation for both structures and the scope of this evidence is centralized under [`docs/testes`](docs/testes/README.md).
 
 ## 📜 License
 

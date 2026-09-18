@@ -2,7 +2,7 @@
 
 > [Voltar ao índice da documentação](../README.pt-BR.md)
 
-Este guia descreve como integrar o código-fonte do RickSQL a um projeto Delphi. A implementação permanece em `src/`; a documentação foi centralizada em `docs/` e os projetos executáveis de exemplo e teste permanecem, respectivamente, em `samples/` e `tests/`.
+Este guia descreve como integrar o código-fonte do RickSQL a um projeto Delphi. A implementação permanece em `src/`; a documentação foi centralizada em `docs/`; os exemplos executáveis ficam em `samples/`; a suíte oficial de novas refatorações fica em `NewTests/`; e `tests/` permanece como suíte legada.
 
 ## Estrutura de pastas
 
@@ -27,6 +27,8 @@ RickSQL/
       Rick.SQL.Model.Execution.Result.pas
       Rick.SQL.Model.Driver.Definition.pas
       Rick.SQL.Model.Contracts.pas
+    error/
+      Rick.SQL.Error.Normalizer.pas
     core/
       Rick.SQL.Core.Connection.Validator.pas
       Rick.SQL.Core.Command.Validator.pas
@@ -68,7 +70,14 @@ RickSQL/
     bancos/
     testes/
     engenharia/
-  tests/
+  NewTests/
+    RickSQL.NewTests.dpr
+    RickSQL.NewTests.dproj
+    src/
+      Error/
+        Rick.SQL.Tests.Error.Integration.pas
+        Rick.SQL.Tests.Error.Normalizer.pas
+  tests/                  # legado
     compilacao/
     unitarios/
     integracao/
@@ -89,7 +98,11 @@ Não existe pasta `packages` no projeto, nem arquivo `.dpk`.
 
 A unit `Rick.SQL.Core.Driver.Context.Factory.pas`, com a classe `TRickSQLCoreDriverContextFactory`, centraliza a resolução do provider (via `Rick.SQL.Core.Driver.Factory`) e da biblioteca cliente (via `Rick.SQL.Core.ClientLibrary.Resolver`) necessárias para criar um `TRickSQLServiceFireDACDriverContext`.
 
-Ela é consumida tanto por `Rick.SQL.Core.Open.Executor` quanto por `Rick.SQL.Core.Command.Executor`, evitando que os dois executores repitam a lógica de criação do contexto do driver. A política de separação de responsabilidades está documentada em [Controle de toxicidade](../engenharia/CONTROLE_DE_TOXICIDADE.pt-BR.md).
+Ela é consumida tanto por `Rick.SQL.Core.Open.Executor` quanto por `Rick.SQL.Core.Command.Executor`, evitando que os dois executores repitam a lógica de criação do contexto do driver.
+
+A unit `src/error/Rick.SQL.Error.Normalizer.pas` concentra a política compartilhada de normalização de exceptions, sanitização de `Message`/`TechnicalDetail` e extração de metadados FireDAC. Ela fica fora de `core` e `services` para poder ser consumida por ambos sem introduzir uma dependência `services -> core`. `Rick.SQL.Core.Error.Parser` permanece responsável pelas mensagens amigáveis fixas usadas pelos fluxos de core e delega a normalização técnica.
+
+A política de separação de responsabilidades está documentada em [Controle de toxicidade](../engenharia/CONTROLE_DE_TOXICIDADE.pt-BR.md).
 
 ## Configuração no Delphi
 
@@ -100,6 +113,7 @@ Caminhos absolutos recomendados:
 ```text
 C:\Bibliotecas\RickSQL\src
 C:\Bibliotecas\RickSQL\src\model
+C:\Bibliotecas\RickSQL\src\error
 C:\Bibliotecas\RickSQL\src\core
 C:\Bibliotecas\RickSQL\src\services
 C:\Bibliotecas\RickSQL\src\services\drivers
@@ -116,6 +130,7 @@ E configurar o `Library Path` com:
 ```text
 $(RICKSQL_HOME)\src
 $(RICKSQL_HOME)\src\model
+$(RICKSQL_HOME)\src\error
 $(RICKSQL_HOME)\src\core
 $(RICKSQL_HOME)\src\services
 $(RICKSQL_HOME)\src\services\drivers

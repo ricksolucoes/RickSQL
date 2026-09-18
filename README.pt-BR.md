@@ -56,6 +56,7 @@ Caso opte pela instalação manual, basta adicionar as seguintes pastas ao seu p
 ```text
 RickSQL\src
 RickSQL\src\model
+RickSQL\src\error
 RickSQL\src\core
 RickSQL\src\services
 RickSQL\src\services\drivers
@@ -164,7 +165,8 @@ RickSQL/
 ├── LICENSE
 ├── LICENSE-pt-BR
 ├── src/       # implementação e contratos Delphi
-├── tests/     # projetos de compilação, unitários, integração, memória e concorrência
+├── NewTests/  # suíte oficial de novas refatorações: DUnit + GUI Test Runner
+├── tests/     # suíte legada de compilação, unitários, integração, memória e concorrência
 ├── samples/   # exemplos executáveis
 └── docs/      # documentação técnica centralizada
 ```
@@ -189,9 +191,9 @@ A documentação detalhada não fica distribuída entre `tests` e `samples`; o �
 
 ## 🧪 Testes
 
-Os testes permanecem em `tests/`, separados em compilação, unitários, integração, memória e concorrência. A documentação desses projetos foi centralizada em [`docs/testes`](docs/testes/README.pt-BR.md).
+A suíte oficial para novas refatorações e correções comportamentais fica em `NewTests/` e usa DUnit com GUI Test Runner. As units da cobertura de normalização de exceptions estão organizadas em `NewTests/src/Error/`, enquanto o projeto e o runner permanecem na raiz de `NewTests/`. A árvore `tests/` permanece como suíte legada e material auxiliar; não é dependência estrutural de `NewTests/`.
 
-A existência dos projetos de teste não implica que eles tenham sido executados no ambiente atual. Resultados de build, execução, leaks ou homologação devem ser informados somente quando houver execução real no Delphi correspondente.
+A execução registrada da suíte atual no Delphi 12 Community Edition, alvo Windows 32-bit, executou **14 de 14 testes**, com **0 falhas** e **0 erros**. A documentação das duas estruturas e os limites dessa evidência estão centralizados em [`docs/testes`](docs/testes/README.pt-BR.md).
 
 ## 📜 Licença
 

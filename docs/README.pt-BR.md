@@ -1,6 +1,6 @@
 # Documentação do RickSQL
 
-Este diretório é a fonte canônica da documentação técnica do projeto. A implementação em `src/` continua sendo a fonte primária para comportamento; `tests/` e `samples/` complementam essa leitura com contratos e exemplos executáveis.
+Este diretório é a fonte canônica da documentação técnica do projeto. A implementação em `src/` continua sendo a fonte primária para comportamento; `NewTests/`, `tests/` e `samples/` complementam essa leitura com cobertura oficial de novas refatorações, contratos legados e exemplos executáveis.
 
 > [Voltar ao README principal](../README.pt-BR.md)
 
@@ -34,7 +34,7 @@ Os documentos em português do Brasil usam o sufixo `.pt-BR.md`. As versões em 
 
 | Documento | Conteúdo |
 |---|---|
-| [Visão geral de testes e homologação](testes/TESTES_E_HOMOLOGACAO.pt-BR.md) | estratégia, ordem e critérios de aceite |
+| [Visão geral de testes e homologação](testes/TESTES_E_HOMOLOGACAO.pt-BR.md) | suíte oficial `NewTests`, suíte legada `tests`, resultados registrados e critérios de aceite |
 | [Testes de compilação](testes/TESTES_DE_COMPILACAO.pt-BR.md) | 18 projetos de contrato/compilação existentes |
 | [Testes unitários](testes/TESTES_UNITARIOS.pt-BR.md) | projetos isolados de models, validadores, drivers e erros |
 | [Testes de integração](testes/TESTES_DE_INTEGRACAO.pt-BR.md) | projetos SQLite, Firebird, PostgreSQL, SQL Server, ODBC e infraestrutura |
@@ -53,7 +53,8 @@ Os documentos em português do Brasil usam o sufixo `.pt-BR.md`. As versões em 
 - O `README.md` da raiz é a landing page padrão do repositório em inglês; `README.pt-BR.md` contém a versão equivalente em português do Brasil.
 - `docs/` contém a documentação técnica detalhada.
 - `samples/` contém somente os projetos de exemplo.
-- `tests/` contém somente projetos e artefatos de teste.
+- `NewTests/` contém a suíte oficial DUnit com GUI Test Runner para novas refatorações e correções comportamentais.
+- `tests/` contém a suíte legada e seus artefatos de teste.
 - `LICENSE` e `LICENSE-pt-BR` permanecem na raiz por serem documentos normativos de licenciamento.
 
 A documentação não deve declarar compilação, aprovação de testes, ausência de leaks ou conformidade de métricas sem evidência real da ferramenta correspondente.

@@ -4,20 +4,30 @@
 
 ## Purpose
 
-Centralize the validation strategy for RickSQL's public and internal contracts. The executable projects remain under [`tests/`](../../tests/) and are Delphi console projects (`.dpr`); this documentation describes what exists in the current files without treating the presence of a test as evidence that it has been executed.
+Centralize the validation strategy for RickSQL's public and internal contracts. The official suite for new refactorings is under [`NewTests/`](../../NewTests/) and uses DUnit with the GUI Test Runner. The [`tests/`](../../tests/) tree remains the legacy suite of Delphi console projects (`.dpr`) and reference material. The presence of any test is not evidence that it has been executed.
 
 ## Organization
 
 ```text
-tests/
-  compilacao/
-  unitarios/
-  integracao/
-  memoria/
-  concorrencia/
+NewTests/
+├── RickSQL.NewTests.dpr
+├── RickSQL.NewTests.dproj
+└── src/
+    └── Error/
+        ├── Rick.SQL.Tests.Error.Integration.pas
+        └── Rick.SQL.Tests.Error.Normalizer.pas
+
+tests/                  # legacy
+├── compilacao/
+├── unitarios/
+├── integracao/
+├── memoria/
+└── concorrencia/
 ```
 
-Detailed documentation is separated by purpose:
+The project under `NewTests/` consumes the production implementation directly from `../src`, while its own test units are organized under `NewTests/src/`. It does not reuse helpers that exist only under `tests/`. New refactorings and behavioral fixes must add their coverage to this official suite.
+
+Detailed documentation for the legacy suite is separated by purpose:
 
 - [Compilation tests](TESTES_DE_COMPILACAO.md)
 - [Unit tests](TESTES_UNITARIOS.md)
@@ -25,6 +35,30 @@ Detailed documentation is separated by purpose:
 - [Environment setup](CONFIGURACAO_AMBIENTE.md)
 - [Memory tests](TESTES_DE_MEMORIA.md)
 - [Concurrency tests](TESTES_DE_CONCORRENCIA.md)
+
+## Official new suite
+
+`NewTests/RickSQL.NewTests.dpr` is the DUnit entry point using the GUI Test Runner. The units registered under `NewTests/src/Error/` cover shared `TRickSQLError` normalization and integration of the components changed by the exception refactoring.
+
+The current suite registers two test classes:
+
+- `TRickSQLErrorNormalizerTests` — 6 tests covering generic exceptions, sanitization, parser contract, deterministic FireDAC metadata, and preservation of the code actually supplied by SQLite/FireDAC;
+- `TRickSQLErrorIntegrationTests` — 8 integration tests covering Driver Context, Connection, Query, Session, Parameter Binder, Transaction, DataSet Materializer, and Client Library Resolver.
+
+### Recorded real execution — 2026-09-18
+
+The suite was executed on **Delphi 12 Community Edition**, targeting **Windows 32-bit**, using the **DUnit GUI Test Runner**. The runner displayed:
+
+```text
+Tests:     14
+Run:       14
+Failures:   0
+Errors:     0
+Overrides:  0
+Score:    100%
+```
+
+This result confirms execution of the `NewTests` suite in that environment. It does not constitute execution of the legacy `tests/` tree and does not prove external scenarios that are not part of these 14 tests. The real Method Toxicity measurement for the test project is recorded in [Toxicity control](../engenharia/CONTROLE_DE_TOXICIDADE.md).
 
 ## Validation order
 
@@ -84,6 +118,7 @@ For the test projects, configure the `Search Path` or `Library Path` with the fr
 ```text
 RickSQL\src
 RickSQL\src\model
+RickSQL\src\error
 RickSQL\src\core
 RickSQL\src\services
 RickSQL\src\services\drivers

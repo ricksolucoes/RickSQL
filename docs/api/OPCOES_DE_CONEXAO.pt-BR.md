@@ -98,4 +98,4 @@ O parâmetro `DriverID` é reservado ao framework e não deve ser informado pelo
 
 ## Segurança
 
-A senha (`Password`) é usada somente para montar a conexão real com o banco. Mensagens amigáveis controladas pelo framework e o detalhe técnico produzido por `Rick.SQL.Core.Error.Parser` mascaram automaticamente valores associados a chaves sensíveis (`Password=`, `PWD=`, `Pass=`, `Senha=`, `User Password=`, `User_Password=`), substituindo o valor por `***`. Consulte [`TRATAMENTO_DE_ERROS.md`](TRATAMENTO_DE_ERROS.pt-BR.md) para o detalhamento completo desse mecanismo.
+A senha (`Password`) é usada somente para montar a conexão real com o banco. Mensagens e detalhes técnicos processados por `Rick.SQL.Error.Normalizer` mascaram automaticamente valores associados a chaves sensíveis (`Password=`, `PWD=`, `Pass=`, `Senha=`, `User Password=`, `User_Password=`), substituindo o valor por `***`. O normalizador compartilhado fica em `src/error`. Consulte [`TRATAMENTO_DE_ERROS.md`](TRATAMENTO_DE_ERROS.pt-BR.md) para o detalhamento completo desse mecanismo.

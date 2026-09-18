@@ -11,6 +11,7 @@ Before compiling any example, add the framework folders to Delphi's `Library Pat
 ```text
 RickSQL\src
 RickSQL\src\model
+RickSQL\src\error
 RickSQL\src\core
 RickSQL\src\services
 RickSQL\src\services\drivers

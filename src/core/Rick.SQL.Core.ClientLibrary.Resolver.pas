@@ -188,7 +188,8 @@ uses
 
   // RickSQL
   Rick.SQL.Model.Contracts,
-  Rick.SQL.Core.Driver.Factory;
+  Rick.SQL.Core.Driver.Factory,
+  Rick.SQL.Error.Normalizer;
 
 const
   _OPERATION_ = 'Resolução da biblioteca cliente';
@@ -497,7 +498,7 @@ begin
     Result.Success := InspectBinaryStream(APath, Result);
   except
     on E: Exception do
-      Result.Detail := E.Message;
+      Result.Detail := TRickSQLErrorNormalizer.TechnicalDetail(E);
   end;
 end;
 
@@ -535,9 +536,8 @@ end;
 class function TRickSQLCoreClientLibraryResolver.CreateError(
   const AMessage: string; const ADetail: string): TRickSQLError;
 begin
-  Result := TRickSQLError.Create(TRickSQLErrorKind.ClientLibrary, AMessage);
-  Result.TechnicalDetail := ADetail;
-  Result.Operation := _OPERATION_;
+  Result := TRickSQLErrorNormalizer.FromDetail(TRickSQLErrorKind.ClientLibrary,
+    AMessage, ADetail, _OPERATION_);
 end;
 
 class function TRickSQLCoreClientLibraryResolver.IsCompatibleCandidate(
@@ -827,7 +827,8 @@ begin
   except
     on E: Exception do
     begin
-      AError := CreateError(_ERROR_UNEXPECTED_, E.Message);
+      AError := TRickSQLErrorNormalizer.FromException(E,
+        TRickSQLErrorKind.ClientLibrary, _ERROR_UNEXPECTED_, _OPERATION_);
       Result := TRickSQLClientLibraryResolution.Empty;
     end;
   end;
@@ -851,7 +852,9 @@ begin
   except
     on E: Exception do
     begin
-      AError := CreateError(_ERROR_VENDOR_LIB_CONFIGURE_, E.Message);
+      AError := TRickSQLErrorNormalizer.FromException(E,
+        TRickSQLErrorKind.ClientLibrary, _ERROR_VENDOR_LIB_CONFIGURE_,
+        _OPERATION_);
       Result := False;
     end;
   end;
@@ -903,7 +906,8 @@ begin
   except
     on E: Exception do
     begin
-      AError := CreateError(_ERROR_UNEXPECTED_, E.Message);
+      AError := TRickSQLErrorNormalizer.FromException(E,
+        TRickSQLErrorKind.ClientLibrary, _ERROR_UNEXPECTED_, _OPERATION_);
       Result := False;
     end;
   end;

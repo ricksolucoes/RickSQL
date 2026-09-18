@@ -1,4 +1,4 @@
-unit Rick.SQL.Service.FireDAC.Driver.Context;
+﻿unit Rick.SQL.Service.FireDAC.Driver.Context;
 
 // Responsabilidade: manter vivo o driver link necessário durante uma sessão FireDAC.
 // NAO resolve providers, executa comandos SQL, materializa datasets ou conhece interface visual.
@@ -49,7 +49,8 @@ uses
   System.SysUtils,
 
   // RickSQL
-  Rick.SQL.Model.Types;
+  Rick.SQL.Model.Types,
+  Rick.SQL.Error.Normalizer;
 
 const
   _OPERATION_ = 'Criação do contexto do driver FireDAC';
@@ -87,7 +88,8 @@ begin
     MarkConfigured;
   except
     on E: Exception do
-      FError := CreateDriverError(_ERROR_UNEXPECTED_, E.Message);
+      FError := TRickSQLErrorNormalizer.FromException(E,
+        TRickSQLErrorKind.Driver, _ERROR_UNEXPECTED_, _OPERATION_);
   end;
 end;
 
@@ -103,9 +105,8 @@ end;
 class function TRickSQLServiceFireDACDriverContext.CreateDriverError(
   const AMessage: string; const ADetail: string): TRickSQLError;
 begin
-  Result := TRickSQLError.Create(TRickSQLErrorKind.Driver, AMessage);
-  Result.TechnicalDetail := ADetail;
-  Result.Operation := _OPERATION_;
+  Result := TRickSQLErrorNormalizer.FromDetail(TRickSQLErrorKind.Driver,
+    AMessage, ADetail, _OPERATION_);
 end;
 
 function TRickSQLServiceFireDACDriverContext.ValidateProvider(
@@ -167,7 +168,8 @@ begin
   except
     on E: Exception do
     begin
-      FError := CreateDriverError(_ERROR_VENDOR_LIB_CONFIGURE_, E.Message);
+      FError := TRickSQLErrorNormalizer.FromException(E,
+        TRickSQLErrorKind.Driver, _ERROR_VENDOR_LIB_CONFIGURE_, _OPERATION_);
       Result := False;
     end;
   end;

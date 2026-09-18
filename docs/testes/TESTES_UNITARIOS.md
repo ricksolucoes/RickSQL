@@ -18,6 +18,7 @@ Configure the `Search Path` or `Library Path` with:
 ```text
 RickSQL\src
 RickSQL\src\model
+RickSQL\src\error
 RickSQL\src\core
 RickSQL\src\services
 RickSQL\src\services\drivers

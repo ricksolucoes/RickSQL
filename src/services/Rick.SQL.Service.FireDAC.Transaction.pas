@@ -47,7 +47,8 @@ uses
   System.SysUtils,
 
   // RickSQL
-  Rick.SQL.Model.Types;
+  Rick.SQL.Model.Types,
+  Rick.SQL.Error.Normalizer;
 
 const
   _OPERATION_START_ = 'Início da transação FireDAC';
@@ -147,9 +148,8 @@ class function TRickSQLServiceFireDACTransaction.CreateTransactionError(
   const AMessage: string; const ADetail: string;
   const AOperation: string): TRickSQLError;
 begin
-  Result := TRickSQLError.Create(TRickSQLErrorKind.Transaction, AMessage);
-  Result.TechnicalDetail := ADetail;
-  Result.Operation := AOperation;
+  Result := TRickSQLErrorNormalizer.FromDetail(TRickSQLErrorKind.Transaction,
+    AMessage, ADetail, AOperation);
 end;
 
 class function TRickSQLServiceFireDACTransaction.ValidateAssigned(
@@ -188,8 +188,8 @@ begin
         _DETAIL_TRANSACTION_NOT_ACTIVE_, _OPERATION_START_);
   except
     on E: Exception do
-      AError := CreateTransactionError(_ERROR_START_, E.Message,
-        _OPERATION_START_);
+      AError := TRickSQLErrorNormalizer.FromException(E,
+        TRickSQLErrorKind.Transaction, _ERROR_START_, _OPERATION_START_);
   end;
 end;
 
@@ -211,7 +211,8 @@ begin
         _DETAIL_TRANSACTION_STILL_ACTIVE_, AOperation);
   except
     on E: Exception do
-      AError := CreateTransactionError(AMessage, E.Message, AOperation);
+      AError := TRickSQLErrorNormalizer.FromException(E,
+        TRickSQLErrorKind.Transaction, AMessage, AOperation);
   end;
 end;
 

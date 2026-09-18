@@ -38,6 +38,7 @@ Add the following folders to the `Library Path` or `Search Path`:
 ```text
 RickSQL\src
 RickSQL\src\model
+RickSQL\src\error
 RickSQL\src\core
 RickSQL\src\services
 RickSQL\src\services\drivers

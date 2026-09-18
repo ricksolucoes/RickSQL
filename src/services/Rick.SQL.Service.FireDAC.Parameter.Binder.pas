@@ -1,4 +1,4 @@
-unit Rick.SQL.Service.FireDAC.Parameter.Binder;
+﻿unit Rick.SQL.Service.FireDAC.Parameter.Binder;
 
 // Responsabilidade: aplicar parâmetros do RickSQL aos parâmetros de uma query FireDAC.
 // NAO valida conexão, executa comandos SQL ou conhece interface visual.
@@ -55,7 +55,8 @@ uses
   Data.DB,
 
   // RickSQL
-  Rick.SQL.Model.Types;
+  Rick.SQL.Model.Types,
+  Rick.SQL.Error.Normalizer;
 
 const
   _OPERATION_ = 'Aplicação de parâmetros FireDAC';
@@ -137,17 +138,17 @@ begin
     Result := True;
   except
     on E: Exception do
-      AError := CreateParameterError(Format(_ERROR_BIND_PARAMETER_,
-        [AParameter.Name]), E.Message);
+      AError := TRickSQLErrorNormalizer.FromException(E,
+        TRickSQLErrorKind.Parameter, Format(_ERROR_BIND_PARAMETER_,
+        [AParameter.Name]), _OPERATION_);
   end;
 end;
 
 class function TRickSQLServiceFireDACParameterBinder.CreateParameterError(
   const AMessage: string; const ADetail: string): TRickSQLError;
 begin
-  Result := TRickSQLError.Create(TRickSQLErrorKind.Parameter, AMessage);
-  Result.TechnicalDetail := ADetail;
-  Result.Operation := _OPERATION_;
+  Result := TRickSQLErrorNormalizer.FromDetail(TRickSQLErrorKind.Parameter,
+    AMessage, ADetail, _OPERATION_);
 end;
 
 class function TRickSQLServiceFireDACParameterBinder.ValidateSetup(

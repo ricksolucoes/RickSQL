@@ -1,7 +1,7 @@
 ﻿unit Rick.SQL.Core.Error.Parser;
 
 // Responsabilidade: converter falhas internas em erros estruturados do RickSQL.
-// NAO exibe mensagens, registra logs ou expõe credenciais.
+// Mantém as mensagens amigáveis legadas e delega a normalização compartilhada.
 
 interface
 
@@ -18,19 +18,6 @@ type
   private
     class function FriendlyMessage(
       const AKind: TRickSQLErrorKind): string; static;
-    class function CreateError(const AKind: TRickSQLErrorKind;
-      const ADetail: string; const AOperation: string): TRickSQLError; static;
-    class function TechnicalDetail(const AException: Exception): string; static;
-    class function FireDACDetail(const AException: Exception): string; static;
-    class function ExtractDBMSCode(const AException: Exception): Integer; static;
-    class function ExtractSQLState(const AException: Exception): string; static;
-    class function SanitizeDetail(const ADetail: string): string; static;
-    class function MaskSensitiveKeys(const AText: string): string; static;
-    class function MaskSensitiveValue(const AText: string;
-      const AKey: string): string; static;
-    class function SensitiveValueEnd(const AText: string;
-      const AStart: Integer): Integer; static;
-    class function IsValueDelimiter(const AChar: Char): Boolean; static;
   public
     class function FromException(const AException: Exception;
       const AKind: TRickSQLErrorKind;
@@ -45,21 +32,10 @@ type
 implementation
 
 uses
-  // RTL
-  System.StrUtils,
-
-  // FireDAC
-{$IFDEF FULL_EDITION}
-  FireDAC.Phys.ODBCWrapper,
-{$ENDIF}
-  FireDAC.Stan.Error,
-  FireDAC.Phys.IBWrapper,
-  FireDAC.Phys.MySQLWrapper;
-
-
+  // RickSQL
+  Rick.SQL.Error.Normalizer;
 
 const
-  _MASK_ = '***';
   _MESSAGE_VALIDATION_ =
     'Os dados informados para a operação SQL são inválidos. Revise as opções, o SQL e os parâmetros.';
   _MESSAGE_UNSUPPORTED_DATABASE_ =
@@ -81,13 +57,6 @@ const
     'Não foi possível preparar o conjunto de dados retornado pela consulta. Verifique os campos retornados pelo SQL.';
   _MESSAGE_UNEXPECTED_ =
     'Ocorreu uma falha inesperada durante a operação SQL. Verifique o detalhe técnico e tente novamente.';
-  _DETAIL_NOT_AVAILABLE_ = 'Nenhum detalhe técnico foi informado.';
-  _KEY_PASSWORD_ = 'Password=';
-  _KEY_PWD_ = 'PWD=';
-  _KEY_PASS_ = 'Pass=';
-  _KEY_SENHA_ = 'Senha=';
-  _KEY_USER_PASSWORD_ = 'User Password=';
-  _KEY_USER_PASSWORD_UNDERSCORE_ = 'User_Password=';
 
 class function TRickSQLCoreErrorParser.FriendlyMessage(
   const AKind: TRickSQLErrorKind): string;
@@ -109,155 +78,25 @@ begin
   Result := _MAP_ERROR_MESSAGES[AKind];
 end;
 
-class function TRickSQLCoreErrorParser.CreateError(
-  const AKind: TRickSQLErrorKind; const ADetail: string;
-  const AOperation: string): TRickSQLError;
-begin
-  Result := TRickSQLError.Create(AKind, FriendlyMessage(AKind));
-  Result.TechnicalDetail := SanitizeDetail(ADetail);
-  Result.Operation := AOperation;
-end;
-
-class function TRickSQLCoreErrorParser.TechnicalDetail(
-  const AException: Exception): string;
-begin
-  Result := FireDACDetail(AException);
-
-  if Result = '' then
-    Result := AException.Message;
-end;
-
-class function TRickSQLCoreErrorParser.FireDACDetail(
-  const AException: Exception): string;
-var
-  LFDError: EFDDBEngineException;
-begin
-  Result := '';
-
-  if not (AException is EFDDBEngineException) then
-    Exit;
-
-  LFDError := EFDDBEngineException(AException);
-  if LFDError.ErrorCount > 0 then
-    Result := LFDError.Errors[0].Message;
-end;
-
-class function TRickSQLCoreErrorParser.ExtractDBMSCode(
-  const AException: Exception): Integer;
-var
-  LFDError: EFDDBEngineException;
-begin
-  Result := 0;
-
-  if not (AException is EFDDBEngineException) then
-    Exit;
-
-  LFDError := EFDDBEngineException(AException);
-  if LFDError.ErrorCount > 0 then
-    Result := LFDError.Errors[0].ErrorCode;
-end;
-
-class function TRickSQLCoreErrorParser.ExtractSQLState(
-  const AException: Exception): string;
-var
-  LFDError: EFDDBEngineException;
-  LDBError: TFDDBError;
-begin
-  Result := '';
-
-  if not (AException is EFDDBEngineException) then
-    Exit;
-
-  LFDError := EFDDBEngineException(AException);
-
-  if LFDError.ErrorCount = 0 then
-    Exit;
-
-  LDBError := LFDError.Errors[0];
-
-  if LDBError is TFDIBError then
-    Exit(TFDIBError(LDBError).SQLState);
-
-  if LDBError is TFDMySQLError then
-    Exit(TFDMySQLError(LDBError).SQLState);
-
-{$IFDEF FULL_EDITION}
-  if LDBError is TFDODBCNativeError then
-    Exit(TFDODBCNativeError(LDBError).SQLState);
-{$ENDIF}
-end;
-
-class function TRickSQLCoreErrorParser.SanitizeDetail(
-  const ADetail: string): string;
-begin
-  Result := Trim(ADetail);
-
-  if Result = '' then
-    Exit(_DETAIL_NOT_AVAILABLE_);
-
-  Result := MaskSensitiveKeys(Result);
-end;
-
-class function TRickSQLCoreErrorParser.MaskSensitiveKeys(
-  const AText: string): string;
-begin
-  Result := MaskSensitiveValue(AText, _KEY_USER_PASSWORD_);
-  Result := MaskSensitiveValue(Result, _KEY_USER_PASSWORD_UNDERSCORE_);
-  Result := MaskSensitiveValue(Result, _KEY_PASSWORD_);
-  Result := MaskSensitiveValue(Result, _KEY_PWD_);
-  Result := MaskSensitiveValue(Result, _KEY_PASS_);
-  Result := MaskSensitiveValue(Result, _KEY_SENHA_);
-end;
-
-class function TRickSQLCoreErrorParser.MaskSensitiveValue(
-  const AText: string; const AKey: string): string;
-var
-  LPosition: Integer;
-  LStart: Integer;
-begin
-  Result := AText;
-  LPosition := Pos(UpperCase(AKey), UpperCase(Result));
-  while LPosition > 0 do
-  begin
-    LStart := LPosition + Length(AKey);
-    Delete(Result, LStart, SensitiveValueEnd(Result, LStart) - LStart);
-    Insert(_MASK_, Result, LStart);
-    LPosition := PosEx(UpperCase(AKey), UpperCase(Result), LStart + 1);
-  end;
-end;
-
-class function TRickSQLCoreErrorParser.SensitiveValueEnd(
-  const AText: string; const AStart: Integer): Integer;
-begin
-  Result := AStart;
-  while (Result <= Length(AText)) and
-    not IsValueDelimiter(AText[Result]) do
-    Inc(Result);
-end;
-
-class function TRickSQLCoreErrorParser.IsValueDelimiter(
-  const AChar: Char): Boolean;
-begin
-  Result := CharInSet(AChar, [';', ',', #13, #10]);
-end;
-
 class function TRickSQLCoreErrorParser.FromException(
   const AException: Exception; const AKind: TRickSQLErrorKind;
   const AOperation: string): TRickSQLError;
 begin
-  if not Assigned(AException) then
-    Exit(FromMessage(AKind, _DETAIL_NOT_AVAILABLE_, AOperation));
-
-  Result := CreateError(AKind, TechnicalDetail(AException), AOperation);
-  Result.DBMSCode := ExtractDBMSCode(AException);
-  Result.SQLState := ExtractSQLState(AException);
+  Result := TRickSQLErrorNormalizer.FromException(AException, AKind,
+    FriendlyMessage(AKind), AOperation);
 end;
 
 class function TRickSQLCoreErrorParser.FromMessage(
   const AKind: TRickSQLErrorKind; const AMessage: string;
   const AOperation: string): TRickSQLError;
+var
+  LDetail: string;
 begin
-  Result := CreateError(AKind, AMessage, AOperation);
+  LDetail := Trim(AMessage);
+  if LDetail = '' then
+    LDetail := TRickSQLErrorNormalizer.TechnicalDetail(nil);
+  Result := TRickSQLErrorNormalizer.FromDetail(AKind, FriendlyMessage(AKind),
+    LDetail, AOperation);
 end;
 
 class function TRickSQLCoreErrorParser.Unexpected(

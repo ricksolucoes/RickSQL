@@ -66,7 +66,8 @@ uses
   System.SysUtils,
 
   // RickSQL
-  Rick.SQL.Model.Types;
+  Rick.SQL.Model.Types,
+  Rick.SQL.Error.Normalizer;
 
 const
   _OPERATION_ = 'Materialização do dataset';
@@ -105,7 +106,8 @@ begin
     on E: Exception do
     begin
       ReleaseOnFailure(Result);
-      AError := CreateDataSetError(_ERROR_MATERIALIZE_DATASET_, E.Message);
+      AError := TRickSQLErrorNormalizer.FromException(E,
+        TRickSQLErrorKind.DataSet, _ERROR_MATERIALIZE_DATASET_, _OPERATION_);
     end;
   end;
 end;
@@ -113,9 +115,8 @@ end;
 class function TRickSQLCoreDataSetMaterializer.CreateDataSetError(
   const AMessage: string; const ADetail: string): TRickSQLError;
 begin
-  Result := TRickSQLError.Create(TRickSQLErrorKind.DataSet, AMessage);
-  Result.TechnicalDetail := ADetail;
-  Result.Operation := _OPERATION_;
+  Result := TRickSQLErrorNormalizer.FromDetail(TRickSQLErrorKind.DataSet,
+    AMessage, ADetail, _OPERATION_);
 end;
 
 class function TRickSQLCoreDataSetMaterializer.ValidateSetup(

@@ -54,7 +54,8 @@ uses
   System.SysUtils,
 
   // RickSQL
-  Rick.SQL.Model.Types;
+  Rick.SQL.Model.Types,
+  Rick.SQL.Error.Normalizer;
 
 const
   _OPERATION_CONFIGURE_ = 'Configuração da conexão FireDAC';
@@ -97,7 +98,9 @@ begin
     Result := True;
   except
     on E: Exception do
-      AError := CreateConnectionError(_ERROR_CONFIGURE_CONNECTION_, E.Message);
+      AError := TRickSQLErrorNormalizer.FromException(E,
+        TRickSQLErrorKind.Connection, _ERROR_CONFIGURE_CONNECTION_,
+        _OPERATION_CONFIGURE_);
   end;
 end;
 
@@ -127,8 +130,8 @@ begin
   except
     on E: Exception do
     begin
-      AError := CreateConnectionError(_ERROR_OPEN_CONNECTION_, E.Message);
-      AError.Operation := _OPERATION_OPEN_;
+      AError := TRickSQLErrorNormalizer.FromException(E,
+        TRickSQLErrorKind.Connection, _ERROR_OPEN_CONNECTION_, _OPERATION_OPEN_);
       Result := False;
     end;
   end;
@@ -147,9 +150,8 @@ end;
 class function TRickSQLServiceFireDACConnection.CreateConnectionError(
   const AMessage: string; const ADetail: string): TRickSQLError;
 begin
-  Result := TRickSQLError.Create(TRickSQLErrorKind.Connection, AMessage);
-  Result.TechnicalDetail := ADetail;
-  Result.Operation := _OPERATION_CONFIGURE_;
+  Result := TRickSQLErrorNormalizer.FromDetail(TRickSQLErrorKind.Connection,
+    AMessage, ADetail, _OPERATION_CONFIGURE_);
 end;
 
 class function TRickSQLServiceFireDACConnection.ValidateSetup(

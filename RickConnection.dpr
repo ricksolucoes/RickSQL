@@ -46,7 +46,8 @@ uses
   Rick.SQL.Service.FireDAC.Driver.PostgreSQL in 'src\services\drivers\Rick.SQL.Service.FireDAC.Driver.PostgreSQL.pas',
   Rick.SQL.Service.FireDAC.Driver.SQLAnywhere in 'src\services\drivers\Rick.SQL.Service.FireDAC.Driver.SQLAnywhere.pas',
   Rick.SQL.Service.FireDAC.Driver.SQLite in 'src\services\drivers\Rick.SQL.Service.FireDAC.Driver.SQLite.pas',
-  Rick.SQL.Interf in 'src\Rick.SQL.Interf.pas';
+  Rick.SQL.Interf in 'src\Rick.SQL.Interf.pas',
+  Rick.SQL.Error.Normalizer in 'src\error\Rick.SQL.Error.Normalizer.pas';
 
 begin
   try
