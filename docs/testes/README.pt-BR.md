@@ -1,4 +1,4 @@
-# Documentação de testes
+﻿# Documentação de testes
 
 > [Voltar ao índice da documentação](../README.pt-BR.md)
 
@@ -14,14 +14,16 @@ NewTests/
 ├── RickSQL.NewTests.dpr
 ├── RickSQL.NewTests.dproj
 └── src/
-    └── Error/
-        ├── Rick.SQL.Tests.Error.Integration.pas
-        └── Rick.SQL.Tests.Error.Normalizer.pas
+    ├── Error/
+    │   ├── Rick.SQL.Tests.Error.Integration.pas
+    │   └── Rick.SQL.Tests.Error.Normalizer.pas
+    └── Validation/
+        └── Rick.SQL.Tests.Parameter.Validator.pas
 ```
 
 O projeto `RickSQL.NewTests` consome a implementação de produção em `../src` e não depende estruturalmente de `tests/`.
 
-A execução registrada no Delphi 12 Community Edition, alvo Windows 32-bit, executou **14 de 14 testes**, com **0 falhas** e **0 erros**. Os detalhes da execução, da cobertura e do escopo dessa evidência estão em [Testes e homologação](TESTES_E_HOMOLOGACAO.pt-BR.md).
+A execução registrada no Delphi 12 Community Edition, alvo Windows 32-bit, executou **84 de 84 testes**, com **0 falhas** e **0 erros**. A suíte inclui 70 testes de `TRickSQLParameterValidatorTests`, além dos 14 testes já existentes de normalização/integração de erros. Os detalhes da execução, da cobertura e do escopo dessa evidência estão em [Testes e homologação](TESTES_E_HOMOLOGACAO.pt-BR.md).
 
 A documentação detalhada da suíte legada permanece separada por finalidade:
 

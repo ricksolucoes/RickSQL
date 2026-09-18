@@ -1,4 +1,4 @@
-# 🗄️ RickSQL
+﻿# 🗄️ RickSQL
 
 <p align="center">
   <strong>Camada Delphi para execução de SQL com drivers, conexão, materialização e erros encapsulados.</strong>
@@ -191,9 +191,9 @@ A documentação detalhada não fica distribuída entre `tests` e `samples`; o �
 
 ## 🧪 Testes
 
-A suíte oficial para novas refatorações e correções comportamentais fica em `NewTests/` e usa DUnit com GUI Test Runner. As units da cobertura de normalização de exceptions estão organizadas em `NewTests/src/Error/`, enquanto o projeto e o runner permanecem na raiz de `NewTests/`. A árvore `tests/` permanece como suíte legada e material auxiliar; não é dependência estrutural de `NewTests/`.
+A suíte oficial para novas refatorações e correções comportamentais fica em `NewTests/` e usa DUnit com GUI Test Runner. As units de normalização de exceptions estão organizadas em `NewTests/src/Error/`, e a cobertura da validação/identificação de parâmetros SQL fica em `NewTests/src/Validation/`; o projeto e o runner permanecem na raiz de `NewTests/`. A árvore `tests/` permanece como suíte legada e material auxiliar; não é dependência estrutural de `NewTests/`.
 
-A execução registrada da suíte atual no Delphi 12 Community Edition, alvo Windows 32-bit, executou **14 de 14 testes**, com **0 falhas** e **0 erros**. A documentação das duas estruturas e os limites dessa evidência estão centralizados em [`docs/testes`](docs/testes/README.pt-BR.md).
+A execução registrada da suíte atual no Delphi 12 Community Edition, alvo Windows 32-bit, executou **84 de 84 testes**, com **0 falhas** e **0 erros**. Desse total, 70 testes pertencem a `TRickSQLParameterValidatorTests`. A documentação das duas estruturas e os limites dessa evidência estão centralizados em [`docs/testes`](docs/testes/README.pt-BR.md).
 
 ## 📜 Licença
 

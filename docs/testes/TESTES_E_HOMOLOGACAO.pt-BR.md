@@ -1,4 +1,4 @@
-# Testes e homologação
+﻿# Testes e homologação
 
 > [Voltar ao índice da documentação](../README.pt-BR.md)
 
@@ -13,9 +13,11 @@ NewTests/
 ├── RickSQL.NewTests.dpr
 ├── RickSQL.NewTests.dproj
 └── src/
-    └── Error/
-        ├── Rick.SQL.Tests.Error.Integration.pas
-        └── Rick.SQL.Tests.Error.Normalizer.pas
+    ├── Error/
+    │   ├── Rick.SQL.Tests.Error.Integration.pas
+    │   └── Rick.SQL.Tests.Error.Normalizer.pas
+    └── Validation/
+        └── Rick.SQL.Tests.Parameter.Validator.pas
 
 tests/                  # legado
 ├── compilacao/
@@ -38,27 +40,30 @@ A documentação detalhada da suíte legada está separada por finalidade:
 
 ## Nova suíte oficial
 
-O projeto `NewTests/RickSQL.NewTests.dpr` é o ponto de entrada DUnit com GUI Test Runner. As units registradas em `NewTests/src/Error/` cobrem a normalização compartilhada de `TRickSQLError` e a integração dos componentes alterados pela refatoração de exceptions.
+O projeto `NewTests/RickSQL.NewTests.dpr` é o ponto de entrada DUnit com GUI Test Runner. As units registradas em `NewTests/src/Error/` cobrem a normalização compartilhada de `TRickSQLError` e a integração dos componentes alterados pela refatoração de exceptions. A unit `NewTests/src/Validation/Rick.SQL.Tests.Parameter.Validator.pas` cobre a identificação e a validação de parâmetros SQL sem depender de conexão ou banco externo.
 
-A suíte atual registra duas classes de teste:
+A suíte atual registra três classes de teste:
 
 - `TRickSQLErrorNormalizerTests` — 6 testes para exception genérica, sanitização, contrato do parser, metadata FireDAC determinística e preservação do código realmente fornecido pelo SQLite/FireDAC;
-- `TRickSQLErrorIntegrationTests` — 8 testes de integração cobrindo Driver Context, Connection, Query, Session, Parameter Binder, Transaction, DataSet Materializer e Client Library Resolver.
+- `TRickSQLErrorIntegrationTests` — 8 testes de integração cobrindo Driver Context, Connection, Query, Session, Parameter Binder, Transaction, DataSet Materializer e Client Library Resolver;
+- `TRickSQLParameterValidatorTests` — 70 testes DUnit de comportamento cobrindo parâmetros simples/múltiplos/repetidos, case-insensitive, parâmetros extras, strings, comentários, falsos positivos/falsos negativos e construções lexicais específicas dos engines representados pelo framework. Os testes informam explicitamente o engine quando a interpretação depende do dialeto e permanecem offline/determinísticos.
 
 ### Execução real registrada — 18/09/2026
 
 A suíte foi executada no **Delphi 12 Community Edition**, com alvo **Windows 32-bit**, utilizando o **DUnit GUI Test Runner**. O resultado exibido pelo runner foi:
 
 ```text
-Tests:     14
-Run:       14
-Failures:   0
-Errors:     0
-Overrides:  0
-Score:    100%
+Tests:      84
+Run:        84
+Failures:    0
+Errors:      0
+Overrides:   0
+Score:     100%
 ```
 
-Esse resultado confirma a execução da suíte `NewTests` nesse ambiente. Ele não constitui execução da árvore legada `tests/`, nem comprova cenários externos não presentes nesses 14 testes. A medição real de Method Toxicity do projeto de testes está registrada em [Controle de toxicidade](../engenharia/CONTROLE_DE_TOXICIDADE.pt-BR.md).
+A versão efetivamente submetida a essa execução contém, em `TRickSQLCoreParameterScanner.TryTrackParenthesis`, a expressão `CharInSet(CurrentChar(AContext), ['(', ')'])`. Esse registro identifica o estado do fonte homologado; não representa, por si só, uma mudança do contrato público de parâmetros.
+
+O resultado confirma a execução integral da suíte `NewTests` registrada pelo runner nesse ambiente. Ele não constitui execução da árvore legada `tests/`, nem comprova bancos externos ou cenários que não façam parte desses 84 testes. A medição real de Method Toxicity do projeto de testes está registrada em [Controle de toxicidade](../engenharia/CONTROLE_DE_TOXICIDADE.pt-BR.md).
 
 ## Ordem de homologação
 

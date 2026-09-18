@@ -1,4 +1,4 @@
-# Tests and Validation
+﻿# Tests and Validation
 
 > [Back to the documentation index](../README.md)
 
@@ -13,9 +13,11 @@ NewTests/
 ├── RickSQL.NewTests.dpr
 ├── RickSQL.NewTests.dproj
 └── src/
-    └── Error/
-        ├── Rick.SQL.Tests.Error.Integration.pas
-        └── Rick.SQL.Tests.Error.Normalizer.pas
+    ├── Error/
+    │   ├── Rick.SQL.Tests.Error.Integration.pas
+    │   └── Rick.SQL.Tests.Error.Normalizer.pas
+    └── Validation/
+        └── Rick.SQL.Tests.Parameter.Validator.pas
 
 tests/                  # legacy
 ├── compilacao/
@@ -38,27 +40,30 @@ Detailed documentation for the legacy suite is separated by purpose:
 
 ## Official new suite
 
-`NewTests/RickSQL.NewTests.dpr` is the DUnit entry point using the GUI Test Runner. The units registered under `NewTests/src/Error/` cover shared `TRickSQLError` normalization and integration of the components changed by the exception refactoring.
+`NewTests/RickSQL.NewTests.dpr` is the DUnit entry point using the GUI Test Runner. The units registered under `NewTests/src/Error/` cover shared `TRickSQLError` normalization and integration of the components changed by the exception refactoring. The `NewTests/src/Validation/Rick.SQL.Tests.Parameter.Validator.pas` unit covers SQL parameter identification and validation without depending on a connection or external database.
 
-The current suite registers two test classes:
+The current suite registers three test classes:
 
 - `TRickSQLErrorNormalizerTests` — 6 tests covering generic exceptions, sanitization, parser contract, deterministic FireDAC metadata, and preservation of the code actually supplied by SQLite/FireDAC;
-- `TRickSQLErrorIntegrationTests` — 8 integration tests covering Driver Context, Connection, Query, Session, Parameter Binder, Transaction, DataSet Materializer, and Client Library Resolver.
+- `TRickSQLErrorIntegrationTests` — 8 integration tests covering Driver Context, Connection, Query, Session, Parameter Binder, Transaction, DataSet Materializer, and Client Library Resolver;
+- `TRickSQLParameterValidatorTests` — 70 behavior-oriented DUnit tests covering simple/multiple/repeated parameters, case-insensitive names, extra parameters, strings, comments, false positives/false negatives, and engine-specific lexical constructs represented by the framework. Tests specify the engine explicitly when interpretation depends on the dialect and remain offline/deterministic.
 
 ### Recorded real execution — 2026-09-18
 
 The suite was executed on **Delphi 12 Community Edition**, targeting **Windows 32-bit**, using the **DUnit GUI Test Runner**. The runner displayed:
 
 ```text
-Tests:     14
-Run:       14
-Failures:   0
-Errors:     0
-Overrides:  0
-Score:    100%
+Tests:      84
+Run:        84
+Failures:    0
+Errors:      0
+Overrides:   0
+Score:     100%
 ```
 
-This result confirms execution of the `NewTests` suite in that environment. It does not constitute execution of the legacy `tests/` tree and does not prove external scenarios that are not part of these 14 tests. The real Method Toxicity measurement for the test project is recorded in [Toxicity control](../engenharia/CONTROLE_DE_TOXICIDADE.md).
+The source version actually submitted to this execution contains `CharInSet(CurrentChar(AContext), ['(', ')'])` in `TRickSQLCoreParameterScanner.TryTrackParenthesis`. This records the source state that was validated; by itself it does not change the public parameter contract.
+
+This result confirms execution of the complete `NewTests` suite registered by the runner in that environment. It does not constitute execution of the legacy `tests/` tree and does not prove external databases or scenarios that are not part of these 84 tests. The real Method Toxicity measurement for the test project is recorded in [Toxicity control](../engenharia/CONTROLE_DE_TOXICIDADE.md).
 
 ## Validation order
 

@@ -1,4 +1,4 @@
-# Commands and Parameters
+﻿# Commands and Parameters
 
 > [Back to the documentation index](../README.md)
 
@@ -64,7 +64,30 @@ Before execution, `Rick.SQL.Core.Parameter.Validator` applies the following chec
 1. **Names** — every parameter must have a non-empty name that starts with a letter or `_` and contains only letters, numbers, `_`, or `$`; duplicate names are rejected case-insensitively.
 2. **Definition** — `Size` cannot be negative; a `Size` greater than zero is accepted only for types that support a size (text and BLOB types); `Direction` must be `ptInput` (output and input/output parameters are not supported yet); `DataType` must be a supported type; a parameter marked as null must specify `DataType`; and a parameter not marked as null cannot carry a `Null` or empty value.
 3. **Value compatibility** — when `DataType` is known, the value must be compatible with its type family (string, numeric, Boolean, or date/time).
-4. **Required parameters** — the SQL text is scanned internally (while respecting single- and double-quoted literals, `--` line comments, `/* */` block comments, and PostgreSQL's `::` cast operator, as in `coluna::integer`) to identify every `:NAME` marker. Each marker must have a corresponding parameter added to the command; otherwise validation fails before any real database execution.
+4. **Required parameters** — the SQL text is scanned internally by a lexical scanner that receives the command's `TRickSQLDatabaseEngine`. The scanner recognizes `:NAME` markers only when the `:` character does not belong to a literal, comment, delimited identifier, or engine-specific syntax recognized by the framework. Names found more than once in the SQL are consolidated case-insensitively; every identified name must have a corresponding parameter added to the command, otherwise validation fails before the FireDAC session/connection is created.
+
+## Engine-aware lexical parameter identification
+
+The scanner is not a complete SQL parser and it does not translate dialects. Its narrower responsibility is to distinguish RickSQL `:NAME` markers from `:` occurrences that belong to known lexical constructs of the engines represented by `TRickSQLDatabaseEngine`.
+
+Common rules continue to recognize single- and double-quoted strings, doubled-quote escaping, `--` and `/* */` comments, the `::` operator, and `:=` as an occurrence that does not start a parameter. Additional rules are applied only when the selected engine requires the distinction:
+
+| Engine | Constructs considered while identifying parameters |
+|---|---|
+| `PostgreSQL` | `E'...'` strings, dollar-quoted strings (`$$...$$` and `$tag$...$tag$`), nested block comments, and `:` in array slices |
+| `Firebird` | alternative quoting `q'...'`, array bounds, and variables/labels inside PSQL bodies after `BEGIN` |
+| `InterBase` | array-slice bounds and variables inside PSQL bodies after `BEGIN` |
+| `SQLServer` | `[...]` identifiers, labels, nested block comments, and the `:` separator in `JSON_OBJECT` |
+| `MySQL` | backtick identifiers, `#` comments, backslash escaping in strings, MySQL's `--` comment rule, and structured labels |
+| `SQLite` | `[...]` and backtick identifiers |
+| `Oracle` | alternative quoting `q'...'`/`nq'...'`, the `:` separator in `JSON_OBJECT`, and `:NEW`, `:OLD`, and `:PARENT` pseudorecords |
+| `DB2` | structured labels recognized by the scanner |
+| `SQLAnywhere` | `[...]` and backtick identifiers, `//` comments, nested block comments, and structured labels |
+| `Informix` | `:` used in database/catalog qualification, including qualified references |
+| `Access` | `[...]` identifiers |
+| `Advantage`, `ODBC` | use the common lexical rules; the current scanner has no additional `:` rule for these enum values |
+
+Identification still occurs before FireDAC receives the command for `Prepare`. FireDAC remains responsible for preparing/executing the query and binding the parameters that have already been validated; it is not used as the source of truth for discovering required parameters at this stage. In particular, `ODBC` does not identify the DBMS behind the driver, so the scanner does not attempt to infer an underlying ODBC dialect.
 
 ## Query with `Open`
 

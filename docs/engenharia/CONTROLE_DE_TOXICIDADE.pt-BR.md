@@ -1,4 +1,4 @@
-# Controle de toxicidade
+﻿# Controle de toxicidade
 
 > [Voltar ao índice da documentação](../README.pt-BR.md)
 
@@ -87,19 +87,22 @@ A regra mínima para qualquer alteração Delphi é não introduzir nova toxicid
 
 ### Medição real registrada — `RickSQL.NewTests.dproj`
 
-Em **18/09/2026**, o RAD Studio **Delphi 12 Community Edition** executou `Project > Method Toxicity Metrics` para `RickSQL.NewTests.dproj`, com alvo **Windows 32-bit**. Na grade exibida, os maiores valores observados foram:
+Em **18/09/2026**, o RAD Studio **Delphi 12 Community Edition** executou `Project > Method Toxicity Metrics` para `RickSQL.NewTests.dproj`, com alvo **Windows 32-bit**, já incluindo `TRickSQLParameterValidatorTests` e a versão homologada de `Rick.SQL.Core.Parameter.Validator`. A captura fornecida mostra a grade ordenada por `Toxicity` em ordem decrescente.
 
-| Métrica | Maior valor observado |
+| Evidência visível na captura | Valor |
 |---|---:|
-| `Length` | 14 |
-| `Parameters` | 3 |
-| `If Depth` | 1 |
-| `Cyclomatic Complexity` | 3 |
-| `Toxicity` | 0,292 |
+| maior `Toxicity` exibido | 0,325 |
+| maior `Length` visível | 14 |
+| maior `Parameters` visível | 4 |
+| maior `If Depth` visível | 1 |
+| maior `Cyclomatic Complexity` visível | 3 |
+| threshold oficial de `Toxicity` | 1 |
 
-Nenhum método listado atingiu o threshold oficial de `Toxicity = 1`. Portanto, **não foi observada violação de Toxicity no projeto de testes medido**. O máximo de `Parameters = 3` permanece abaixo da baseline de 6; ele apenas ultrapassa a preferência de design por até dois parâmetros simples e, isoladamente, não representa violação do threshold oficial de Toxicity.
+Como a grade está ordenada por `Toxicity` e o primeiro valor exibido é `0,325`, **não foi observada violação do threshold de Toxicity no projeto de testes medido**. Isso não significa `Toxicity = 0`: os métodos possuem valores calculados pela ferramenta abaixo do threshold, incluindo `0,325`, `0,292`, `0,258` e outros valores visíveis na captura.
 
-Essa medição é específica de `RickSQL.NewTests.dproj`. Ela não deve ser apresentada como medição real das units de produção em `src/` nem da suíte legada `tests/` sem executar a ferramenta nesses projetos/units correspondentes.
+A captura também mostra métodos de `TRickSQLParameterValidatorTests`, portanto a medição registrada corresponde ao projeto de testes depois da inclusão da nova cobertura de validação SQL. O valor visível de `Parameters = 4` permanece abaixo da baseline de 6; ele ultrapassa a preferência histórica por até dois parâmetros simples, mas não representa, isoladamente, violação do threshold oficial de Toxicity.
+
+Essa medição é específica de `RickSQL.NewTests.dproj` e da configuração **Windows 32-bit** mostrada. Ela não deve ser extrapolada como medição real da suíte legada `tests/`, de outra plataforma/configuração ou de projetos que não tenham sido submetidos à ferramenta. As units de produção referenciadas por `RickSQL.NewTests.dproj` participam da compilação do projeto, mas a captura não autoriza afirmar que todos os projetos consumidores de `src/` foram medidos.
 
 ## Código morto
 

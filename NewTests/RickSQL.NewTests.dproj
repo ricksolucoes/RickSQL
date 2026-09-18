@@ -119,6 +119,7 @@
         </DelphiCompile>
         <DCCReference Include="src\Error\Rick.SQL.Tests.Error.Integration.pas"/>
         <DCCReference Include="src\Error\Rick.SQL.Tests.Error.Normalizer.pas"/>
+        <DCCReference Include="src\Validation\Rick.SQL.Tests.Parameter.Validator.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

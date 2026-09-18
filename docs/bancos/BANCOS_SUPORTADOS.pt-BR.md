@@ -1,4 +1,4 @@
-# Bancos suportados
+﻿# Bancos suportados
 
 > [Voltar ao índice da documentação](../README.pt-BR.md)
 
@@ -144,6 +144,14 @@ O provider Informix aplica automaticamente `HostName` (a partir de `Server`) e o
 ### Advantage — tipo de servidor
 
 O provider Advantage define automaticamente o parâmetro `ServerTypes` como `Local` quando `Server` está vazio, ou como `Remote` quando `Server` é informado — o consumidor não precisa informar esse parâmetro manualmente.
+
+## Identificação de parâmetros e dialeto
+
+A seleção de `TRickSQLDatabaseEngine` também é utilizada por `Rick.SQL.Core.Parameter.Validator` para desambiguar marcadores RickSQL `:NOME` de construções lexicais do engine que também utilizam `:`. Essa etapa é uma validação local e ocorre antes da criação da sessão/conexão FireDAC.
+
+Isso **não** significa que o RickSQL tenha se tornado um parser ou tradutor de SQL. O scanner possui regras delimitadas às construções necessárias para identificar parâmetros com segurança, como delimitadores específicos, comentários, array slices, labels, PSQL e qualificadores que foram incorporados à cobertura oficial. A descrição funcional e a matriz dessas regras estão em [Comandos e parâmetros](../api/COMANDOS_E_PARAMETROS.pt-BR.md#identificação-lexical-de-parâmetros-por-engine).
+
+`Advantage` usa atualmente somente as regras lexicais comuns do scanner. Para `ODBC`, o valor do enum não identifica o DBMS efetivo por trás do driver; por isso o framework também mantém apenas as regras comuns em vez de presumir um dialeto ODBC específico.
 
 ## Limitações
 

@@ -1,4 +1,4 @@
-# RickSQL Integration Guide
+﻿# RickSQL Integration Guide
 
 > [Back to the documentation index](../README.md)
 
@@ -77,6 +77,8 @@ RickSQL/
       Error/
         Rick.SQL.Tests.Error.Integration.pas
         Rick.SQL.Tests.Error.Normalizer.pas
+      Validation/
+        Rick.SQL.Tests.Parameter.Validator.pas
   tests/                  # legacy
     compilacao/
     unitarios/

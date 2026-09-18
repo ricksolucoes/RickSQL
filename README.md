@@ -1,4 +1,4 @@
-# 🗄️ RickSQL
+﻿# 🗄️ RickSQL
 
 <p align="center">
   <strong>Delphi SQL execution layer with encapsulated drivers, connections, materialization, and errors.</strong>
@@ -191,9 +191,9 @@ Detailed documentation is not distributed across `tests` and `samples`; the cano
 
 ## 🧪 Tests
 
-The official suite for new refactorings and behavioral fixes lives under `NewTests/` and uses DUnit with the GUI Test Runner. The exception-normalization test units are organized under `NewTests/src/Error/`, while the project and runner remain at the root of `NewTests/`. The `tests/` tree remains as the legacy suite and reference material; `NewTests/` does not structurally depend on it.
+The official suite for new refactorings and behavioral fixes lives under `NewTests/` and uses DUnit with the GUI Test Runner. Exception-normalization tests are organized under `NewTests/src/Error/`, while SQL parameter validation/identification coverage lives under `NewTests/src/Validation/`; the project and runner remain at the root of `NewTests/`. The `tests/` tree remains as the legacy suite and reference material; `NewTests/` does not structurally depend on it.
 
-The recorded execution of the current suite on Delphi 12 Community Edition, targeting Windows 32-bit, ran **14 of 14 tests** with **0 failures** and **0 errors**. Documentation for both structures and the scope of this evidence is centralized under [`docs/testes`](docs/testes/README.md).
+The recorded execution of the current suite on Delphi 12 Community Edition, targeting Windows 32-bit, ran **84 of 84 tests** with **0 failures** and **0 errors**. Of those, 70 tests belong to `TRickSQLParameterValidatorTests`. Documentation for both structures and the scope of this evidence is centralized under [`docs/testes`](docs/testes/README.md).
 
 ## 📜 License
 

@@ -1,4 +1,4 @@
-# Comandos e parâmetros
+﻿# Comandos e parâmetros
 
 > [Voltar ao índice da documentação](../README.pt-BR.md)
 
@@ -65,7 +65,30 @@ Antes da execução, `Rick.SQL.Core.Parameter.Validator` aplica, nesta ordem:
 1. **Nomes** — cada parâmetro deve ter um nome não vazio, iniciado por letra ou `_` e composto apenas por letras, números, `_` ou `$`; nomes duplicados (sem diferenciar maiúsculas de minúsculas) são rejeitados.
 2. **Definição** — `Size` não pode ser negativo; um `Size` maior que zero só é aceito para tipos que suportam tamanho (textuais e BLOB); `Direction` deve ser `ptInput` (parâmetros de saída ou entrada/saída ainda não são suportados); o `DataType` deve ser um tipo suportado; um parâmetro marcado como nulo deve informar `DataType`; um parâmetro não marcado como nulo não pode carregar um valor `Null` ou vazio.
 3. **Compatibilidade de valor** — quando `DataType` é conhecido, o valor deve ser compatível com a família do tipo (string, numérico, booleano ou data/hora).
-4. **Parâmetros obrigatórios** — o texto SQL é varrido internamente (respeitando literais entre aspas simples e duplas, comentários de linha `--`, comentários de bloco `/* */` e o operador de cast `::` do PostgreSQL, como em `coluna::integer`) para identificar todos os marcadores `:NOME` presentes; cada marcador precisa ter um parâmetro correspondente adicionado ao comando, caso contrário a validação falha antes de qualquer execução real.
+4. **Parâmetros obrigatórios** — o texto SQL é varrido internamente por um scanner lexical que recebe o `TRickSQLDatabaseEngine` do comando. O scanner identifica marcadores `:NOME` somente quando o caractere `:` não pertence a um literal, comentário, identificador delimitado ou construção sintática específica do engine reconhecida pelo framework. Nomes encontrados mais de uma vez no SQL são consolidados sem diferenciar maiúsculas de minúsculas; cada nome identificado precisa possuir um parâmetro correspondente adicionado ao comando, caso contrário a validação falha antes da criação da sessão/conexão FireDAC.
+
+## Identificação lexical de parâmetros por engine
+
+O scanner não é um parser SQL completo e não converte dialetos. Sua responsabilidade é mais restrita: distinguir os marcadores RickSQL `:NOME` das ocorrências de `:` que fazem parte de construções lexicais conhecidas dos engines representados por `TRickSQLDatabaseEngine`.
+
+As regras comuns continuam reconhecendo strings entre aspas simples e duplas, escapes por duplicação de aspas, comentários `--` e `/* */`, o operador `::` e `:=` como ocorrência que não inicia parâmetro. Regras adicionais são aplicadas somente quando o engine selecionado exige a distinção:
+
+| Engine | Construções consideradas na identificação de parâmetros |
+|---|---|
+| `PostgreSQL` | strings `E'...'`, dollar-quoted strings (`$$...$$` e `$tag$...$tag$`), comentários de bloco aninhados e `:` de array slices |
+| `Firebird` | alternative quoting `q'...'`, limites de arrays e variáveis/labels no corpo PSQL após `BEGIN` |
+| `InterBase` | limites de array slices e variáveis no corpo PSQL após `BEGIN` |
+| `SQLServer` | identificadores `[...]`, labels, comentários de bloco aninhados e separador `:` de `JSON_OBJECT` |
+| `MySQL` | identificadores por backtick, comentários `#`, escape por barra invertida em strings, regra própria para comentário `--` e labels estruturados |
+| `SQLite` | identificadores `[...]` e por backtick |
+| `Oracle` | alternative quoting `q'...'`/`nq'...'`, separador `:` de `JSON_OBJECT` e pseudorregistros `:NEW`, `:OLD` e `:PARENT` |
+| `DB2` | labels estruturados reconhecidos pelo scanner |
+| `SQLAnywhere` | identificadores `[...]` e por backtick, comentários `//`, comentários de bloco aninhados e labels estruturados |
+| `Informix` | `:` usado na qualificação de database/catálogo, inclusive referências qualificadas |
+| `Access` | identificadores `[...]` |
+| `Advantage`, `ODBC` | utilizam as regras lexicais comuns; não há regra adicional de `:` específica desses valores do enum no scanner atual |
+
+A identificação continua sendo feita antes de o FireDAC receber o comando para `Prepare`. O FireDAC permanece responsável por preparar/executar a query e aplicar os parâmetros já validados; ele não é usado como fonte de verdade para descobrir os parâmetros obrigatórios nessa etapa. Em especial, `ODBC` não informa qual DBMS existe por trás do driver, portanto o scanner não tenta inferir um dialeto ODBC subjacente.
 
 ## Consulta com Open
 
