@@ -35,6 +35,7 @@ uses
   Rick.SQL.Service.FireDAC.Driver.Advantage in 'src\services\drivers\Rick.SQL.Service.FireDAC.Driver.Advantage.pas',
   Rick.SQL.Service.FireDAC.Driver.Base in 'src\services\drivers\Rick.SQL.Service.FireDAC.Driver.Base.pas',
   Rick.SQL.Service.FireDAC.Driver.Context in 'src\services\drivers\Rick.SQL.Service.FireDAC.Driver.Context.pas',
+  Rick.SQL.Service.FireDAC.Driver.VendorLibrary in 'src\services\drivers\Rick.SQL.Service.FireDAC.Driver.VendorLibrary.pas',
   Rick.SQL.Service.FireDAC.Driver.DB2 in 'src\services\drivers\Rick.SQL.Service.FireDAC.Driver.DB2.pas',
   Rick.SQL.Service.FireDAC.Driver.Firebird in 'src\services\drivers\Rick.SQL.Service.FireDAC.Driver.Firebird.pas',
   Rick.SQL.Service.FireDAC.Driver.Informix in 'src\services\drivers\Rick.SQL.Service.FireDAC.Driver.Informix.pas',

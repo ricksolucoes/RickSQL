@@ -13,6 +13,8 @@ NewTests/
 ├── RickSQL.NewTests.dpr
 ├── RickSQL.NewTests.dproj
 └── src/
+    ├── ClientLibrary/
+    │   └── Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas
     ├── Error/
     │   ├── Rick.SQL.Tests.Error.Integration.pas
     │   └── Rick.SQL.Tests.Error.Normalizer.pas
@@ -44,32 +46,50 @@ A documentação detalhada da suíte legada está separada por finalidade:
 
 ## Nova suíte oficial
 
-O projeto `NewTests/RickSQL.NewTests.dpr` é o ponto de entrada DUnit com GUI Test Runner. As units registradas em `NewTests/src/Error/` cobrem a normalização compartilhada de `TRickSQLError` e a integração dos componentes alterados pela refatoração de exceptions. A unit `NewTests/src/Infrastructure/Rick.SQL.Tests.FireDAC.WaitProvider.pas` valida o provider VCL de `IFDGUIxWaitCursor` registrado pelo resolver. A unit `NewTests/src/Validation/Rick.SQL.Tests.Parameter.Validator.pas` cobre a identificação e a validação de parâmetros SQL sem depender de conexão ou banco externo. A unit `NewTests/src/Transaction/Rick.SQL.Tests.Transaction.pas` cobre estado transacional, `Start`, `Commit`, `Rollback`, `RollbackAfterFailure`, compatibilidade de `Active` e `UseTransaction=False` usando SQLite local.
+O projeto `NewTests/RickSQL.NewTests.dpr` é o ponto de entrada DUnit com GUI Test Runner. As units registradas em `NewTests/src/Error/` cobrem a normalização compartilhada de `TRickSQLError` e a integração dos componentes alterados pela refatoração de exceptions. A unit `NewTests/src/Infrastructure/Rick.SQL.Tests.FireDAC.WaitProvider.pas` valida o provider VCL de `IFDGUIxWaitCursor` registrado pelo resolver. A unit `NewTests/src/Validation/Rick.SQL.Tests.Parameter.Validator.pas` cobre a identificação e a validação de parâmetros SQL sem depender de conexão ou banco externo. A unit `NewTests/src/Transaction/Rick.SQL.Tests.Transaction.pas` cobre estado transacional, `Start`, `Commit`, `Rollback`, `RollbackAfterFailure`, compatibilidade de `Active` e `UseTransaction=False` usando SQLite local. A unit `NewTests/src/ClientLibrary/Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas` cobre a autoridade canônica de aplicação de `VendorLib`, o caminho compatível `Configure`, o fluxo por `Driver.Context`/`Driver.Context.Factory`, path vazio, ausência da propriedade, falha de setter, equivalência observável e preservação de default de provider.
 
-A suíte atual registra cinco classes de teste:
+A suíte atual registra seis classes de teste:
 
 - `TRickSQLErrorNormalizerTests` — 6 testes para exception genérica, sanitização, contrato do parser, metadata FireDAC determinística e preservação do código realmente fornecido pelo SQLite/FireDAC;
 - `TRickSQLErrorIntegrationTests` — 8 testes de integração cobrindo Driver Context, Connection, Query, Session, Parameter Binder, Transaction, DataSet Materializer e Client Library Resolver;
 - `TRickSQLFireDACWaitProviderTests` — 1 teste de infraestrutura que confirma o provider `Forms` e a criação de `IFDGUIxWaitCursor` no runner VCL;
 - `TRickSQLParameterValidatorTests` — 70 testes DUnit de comportamento cobrindo parâmetros simples/múltiplos/repetidos, case-insensitive, parâmetros extras, strings, comentários, falsos positivos/falsos negativos e construções lexicais específicas dos engines representados pelo framework. Os testes informam explicitamente o engine quando a interpretação depende do dialeto e permanecem offline/determinísticos.
 - `TRickSQLTransactionTests` — 24 testes DUnit cobrindo estado ativo/inativo, falha determinística de inspeção de `InTransaction`, `Start`, `Commit`, `Rollback`, preservação do erro primário em `RollbackAfterFailure`, contrato compatível de `Active` e execução com `UseTransaction=False`.
+- `TRickSQLVendorLibraryTests` — 15 testes DUnit cobrindo aplicação canônica de `VendorLib`, path vazio, DriverLink sem `VendorLib`, falha de setter, `ClientLibraryResolver.Configure`, `Driver.Context`, `Driver.Context.Factory`, preservação das classificações `ClientLibrary` e `Driver`, equivalência entre os caminhos e default do provider InterBase.
 
-### Execução real registrada — 18/09/2026
+### Execução real registrada — 19/09/2026
 
-Essa execução antecede a inclusão de `TRickSQLTransactionTests`. Naquele estado, a suíte foi executada no **Delphi 12 Community Edition**, com alvo **Windows 32-bit**, utilizando o **DUnit GUI Test Runner**. O resultado exibido pelo runner foi:
+A versão atual da suíte oficial foi executada com **DUnit + GUI Test Runner**. A evidência fornecida registra **Delphi 12 Community Edition** e alvo **Windows 32-bit** para a homologação atual. O runner exibiu:
 
 ```text
-Tests:      84
-Run:        84
-Failures:    0
-Errors:      0
-Overrides:   0
-Score:     100%
+Tests:      124
+Run:        124
+Failures:     0
+Errors:       0
+Overrides:    0
+Score:      100%
 ```
 
-A versão efetivamente submetida a essa execução contém, em `TRickSQLCoreParameterScanner.TryTrackParenthesis`, a expressão `CharInSet(CurrentChar(AContext), ['(', ')'])`. Esse registro identifica o estado do fonte homologado; não representa, por si só, uma mudança do contrato público de parâmetros.
+A árvore do runner mostra `TRickSQLVendorLibraryTests` registrada junto às demais classes e todos os testes exibidos estão aprovados. O total de 124 coincide com os métodos `published` do código atual: 6 de `TRickSQLErrorNormalizerTests`, 8 de `TRickSQLErrorIntegrationTests`, 1 de `TRickSQLFireDACWaitProviderTests`, 70 de `TRickSQLParameterValidatorTests`, 24 de `TRickSQLTransactionTests` e 15 de `TRickSQLVendorLibraryTests`.
 
-O resultado acima continua sendo evidência histórica da versão de 84 testes. Em execução posterior informada durante a correção transacional, o runner executou 108 testes, com 107 aprovados, 1 falha e 0 erros. A única falha foi `UseTransactionFalse_NaoDeveIntroduzirErroTransacional`, cujo detalhe informou ausência da factory de `IFDGUIxWaitCursor`. O resolver foi então alterado para selecionar explicitamente o provider Console/VCL/FMX, e foi adicionado `TRickSQLFireDACWaitProviderTests`. Por inspeção estática, a versão atual registra 109 métodos `published` em cinco classes. A execução integral desta versão de 109 testes ainda não foi confirmada. Nenhum desses resultados constitui execução da árvore legada `tests/`. A medição real de Method Toxicity registrada em 18/09/2026 antecede tanto a unit transacional quanto o novo teste de infraestrutura.
+Essa execução valida a suíte oficial `NewTests/`; ela não constitui execução da árvore legada `tests/`, nem comprova Win64, Release ou `FULL_EDITION`.
+
+### Build real registrado — 19/09/2026
+
+O projeto principal `RickConnection.dproj` foi compilado no **Delphi 12 Community Edition**, configuração **Debug**, alvo **Windows 32-bit**. A saída do IDE registra:
+
+```text
+Compiling RickConnection.dproj (Debug, Win32)
+Success
+```
+
+Esse build comprova a configuração mostrada. Não deve ser extrapolado como build de Win64, Release ou `FULL_EDITION`.
+
+### Histórico de homologação anterior
+
+Em **18/09/2026**, uma versão anterior da suíte, ainda sem `TRickSQLTransactionTests`, executou 84 testes com 0 falhas e 0 erros. Depois, durante a correção transacional, houve uma execução de 108 testes com 107 aprovados, 1 falha e 0 erros; a falha em `UseTransactionFalse_NaoDeveIntroduzirErroTransacional` revelou a ausência da factory de `IFDGUIxWaitCursor`. A seleção explícita do provider Console/VCL/FMX e `TRickSQLFireDACWaitProviderTests` foram adicionadas em seguida.
+
+Esses resultados permanecem apenas como histórico. O estado homologado mais recente documentado é a execução de **124/124**, sem falhas ou erros, em 19/09/2026. A medição real mais recente de Method Toxicity do `RickSQL.NewTests.dproj`, também em 19/09/2026, está registrada em [Controle de toxicidade](../engenharia/CONTROLE_DE_TOXICIDADE.pt-BR.md).
 
 ## Ordem de homologação
 
@@ -146,6 +166,7 @@ Como critério de homologação, e não como afirmação de execução, a entreg
 - `Open` retorna dataset materializado e utilizável após a liberação da sessão interna;
 - `Execute` retorna `TRickSQLExecutionResult` estruturado;
 - falhas cobertas pela API pública são convertidas para erros estruturados;
+- a resolução da client library permanece separada da aplicação canônica de `VendorLib`, preservando path vazio e as classificações de erro dos fluxos existentes;
 - os testes de memória não apresentam leaks nos cenários realmente executados;
 - os cenários de concorrência executados preservam os resultados esperados;
 - os projetos relevantes compilam e executam no Delphi definido para a homologação.

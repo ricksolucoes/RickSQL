@@ -199,9 +199,9 @@ A documentação detalhada não fica distribuída entre `tests` e `samples`; o �
 
 ## 🧪 Testes
 
-A suíte oficial para novas refatorações e correções comportamentais fica em `NewTests/` e usa DUnit com GUI Test Runner. As units de normalização de exceptions estão em `NewTests/src/Error/`, a validação/identificação de parâmetros SQL em `NewTests/src/Validation/`, a cobertura transacional em `NewTests/src/Transaction/` e a verificação do provider FireDAC em `NewTests/src/Infrastructure/`. A árvore `tests/` permanece como suíte legada e material auxiliar; não é dependência estrutural de `NewTests/`.
+A suíte oficial para novas refatorações e correções comportamentais fica em `NewTests/` e usa DUnit com GUI Test Runner. As units de normalização de exceptions estão em `NewTests/src/Error/`, a validação/identificação de parâmetros SQL em `NewTests/src/Validation/`, a cobertura transacional em `NewTests/src/Transaction/`, a verificação do provider FireDAC em `NewTests/src/Infrastructure/` e a cobertura da aplicação canônica de `VendorLib` em `NewTests/src/ClientLibrary/`. A árvore `tests/` permanece como suíte legada e material auxiliar; não é dependência estrutural de `NewTests/`.
 
-A execução mais recente informada antes desta alteração executou **108 testes**, com **107 aprovados**, **1 falha** e **0 erros**. A falha revelou a ausência da factory de `IFDGUIxWaitCursor`, motivando a seleção explícita de provider implementada agora. Por inspeção estática, a suíte atual registra **109 métodos DUnit `published`** após a inclusão do teste dedicado ao provider; a execução integral desta versão ainda não foi confirmada. Os detalhes e limites dessa evidência estão em [`docs/testes`](docs/testes/README.pt-BR.md).
+Em **19/09/2026**, a suíte oficial executou **124/124 testes**, com **0 falhas**, **0 erros** e **Score 100%** no DUnit GUI Test Runner. No mesmo ciclo de validação, `RickConnection.dproj` registrou build **Debug/Win32: Success** no Delphi 12 Community Edition, e `RickSQL.NewTests.dproj` teve Method Toxicity Metrics executado em Windows 32-bit, com maior `Toxicity` visível de **0,350**. Os detalhes e os limites dessas evidências estão em [`docs/testes`](docs/testes/README.pt-BR.md) e em [Controle de toxicidade](docs/engenharia/CONTROLE_DE_TOXICIDADE.pt-BR.md).
 
 ## 📜 Licença
 

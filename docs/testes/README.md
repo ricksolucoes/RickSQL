@@ -14,6 +14,8 @@ NewTests/
 ├── RickSQL.NewTests.dpr
 ├── RickSQL.NewTests.dproj
 └── src/
+    ├── ClientLibrary/
+    │   └── Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas
     ├── Error/
     │   ├── Rick.SQL.Tests.Error.Integration.pas
     │   └── Rick.SQL.Tests.Error.Normalizer.pas
@@ -27,7 +29,7 @@ NewTests/
 
 The `RickSQL.NewTests` project consumes the production implementation under `../src` and does not structurally depend on `tests/`.
 
-The most recent execution reported before explicit FireDAC provider selection ran **108 tests**, with **107 passed**, **1 failure**, and **0 errors**. The failure occurred in `UseTransactionFalse_NaoDeveIntroduzirErroTransacional` because the `IFDGUIxWaitCursor` factory was not registered. Static inspection of the current suite finds **109 DUnit `published` methods across five classes** after adding `TRickSQLFireDACWaitProviderTests`; full execution of this 109-test version has not yet been confirmed. Details and evidence boundaries are documented in [Tests and validation](TESTES_E_HOMOLOGACAO.md).
+The current suite registers **124 DUnit tests across six classes**, including `TRickSQLVendorLibraryTests` under `NewTests/src/ClientLibrary/`. On **2026-09-19**, the DUnit GUI Test Runner executed **124/124**, with **0 failures**, **0 errors**, and **Score 100%**, in the documented Delphi 12 Community Edition / Windows 32-bit validation round. In the same round, `RickConnection.dproj` recorded a **Debug/Win32: Success** build. Details and evidence boundaries are documented in [Tests and validation](TESTES_E_HOMOLOGACAO.md).
 
 Detailed documentation for the legacy suite remains separated by purpose:
 

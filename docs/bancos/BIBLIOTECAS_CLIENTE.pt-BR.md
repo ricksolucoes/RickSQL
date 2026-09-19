@@ -9,6 +9,30 @@ Alguns bancos exigem uma biblioteca cliente nativa para que o FireDAC consiga ab
 
 Quando o mecanismo escolhido não exige biblioteca cliente (por exemplo, `SQLite`, cuja definição de driver não declara nenhuma entrada em `ClientLibraries`), o resolvedor retorna sucesso imediatamente, sem realizar nenhuma busca.
 
+## Resolução e aplicação de `VendorLib`
+
+A resolução da biblioteca e a aplicação do caminho ao FireDAC são responsabilidades distintas:
+
+```text
+TRickSQLCoreClientLibraryResolver
+        │
+        ├── determina se o engine exige biblioteca cliente
+        ├── localiza e valida o arquivo aplicável
+        └── produz o caminho resolvido
+                    ↓
+TRickSQLServiceFireDACDriverVendorLibrary
+        │
+        └── aplica o caminho à propriedade VendorLib do DriverLink
+```
+
+`TRickSQLCoreClientLibraryResolver` permanece responsável pela política de localização. A aplicação de `VendorLib` fica centralizada em `Rick.SQL.Service.FireDAC.Driver.VendorLibrary`, classe `TRickSQLServiceFireDACDriverVendorLibrary`, que não procura arquivos, não valida PE e não resolve providers.
+
+O fluxo principal (`Driver.Context`) e o caminho compatível `TRickSQLCoreClientLibraryResolver.Configure` delegam para essa mesma implementação canônica. Providers que precisam preencher um `VendorLib` padrão também utilizam a mesma autoridade, evitando regras de atribuição independentes.
+
+Quando o caminho recebido pela implementação canônica é vazio, a aplicação é ignorada e um valor de `VendorLib` já existente é preservado. Isso permite que engines que não exigem client library e configurações que dependem do mecanismo padrão do driver continuem sem uma atribuição forçada.
+
+A centralização é da **aplicação** de `VendorLib`; a classificação externa de erros continua pertencendo ao fluxo que fez a chamada. O caminho compatível `Configure` preserva erros de `ClientLibrary`, enquanto `Driver.Context` preserva a classificação de `Driver`.
+
 ## Ordem de procura
 
 Quando o mecanismo exige biblioteca cliente, a resolução segue esta ordem:
@@ -100,6 +124,6 @@ O detalhe técnico (`TechnicalDetail`) informa as bibliotecas procuradas, o dire
 
 ## O que o RickSQL não faz
 
-O framework não baixa, instala, copia ou registra bibliotecas no sistema operacional. Ele apenas localiza bibliotecas já presentes no ambiente e configura a propriedade `VendorLib` do driver link do FireDAC correspondente, quando essa propriedade existe na classe do driver link resolvido.
+O framework não baixa, instala, copia ou registra bibliotecas no sistema operacional. Ele localiza bibliotecas já presentes no ambiente por meio do resolver e, quando há um caminho a aplicar, encaminha a configuração do `VendorLib` para a implementação canônica `TRickSQLServiceFireDACDriverVendorLibrary`.
 
 A distribuição das bibliotecas exigidas continua sendo responsabilidade da aplicação que utiliza o framework.

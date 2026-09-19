@@ -1,6 +1,7 @@
 ﻿unit Rick.SQL.Core.ClientLibrary.Resolver;
 
-// Responsabilidade: localizar e configurar a biblioteca cliente exigida pelo banco selecionado.
+// Responsabilidade: localizar a biblioteca cliente exigida pelo banco selecionado e
+// preservar o contrato compatível de Configure, delegando a aplicação de VendorLib.
 // NAO baixa bibliotecas, instala clientes, copia arquivos ou altera o sistema operacional.
 
 interface
@@ -28,7 +29,6 @@ uses
 
   // RTL
   System.Classes,
-  System.TypInfo,
 
   // RickSQL
   Rick.SQL.Model.Types,
@@ -176,10 +176,6 @@ type
     class function SetVendorLibrary(
       const AAssignment: TRickSQLVendorLibraryAssignment;
       out AError: TRickSQLError): Boolean; static;
-    class function VendorProperty(const ADriverLink: TComponent): PPropInfo; static;
-    class function ApplyVendorLibrary(
-      const AAssignment: TRickSQLVendorLibraryAssignment;
-      const AProperty: PPropInfo; out AError: TRickSQLError): Boolean; static;
   public
     class function Resolve(const AOptions: TRickSQLConnectionOptions;
       out AError: TRickSQLError): TRickSQLClientLibraryResolution; static;
@@ -199,11 +195,11 @@ uses
   // RickSQL
   Rick.SQL.Model.Contracts,
   Rick.SQL.Core.Driver.Factory,
-  Rick.SQL.Error.Normalizer;
+  Rick.SQL.Error.Normalizer,
+  Rick.SQL.Service.FireDAC.Driver.VendorLibrary;
 
 const
   _OPERATION_ = 'Resolução da biblioteca cliente';
-  _PROPERTY_VENDOR_LIB_ = 'VendorLib';
   _FRAMEWORK_DIRECTORY_ = 'RickSQL';
   _LIBRARIES_DIRECTORY_ = 'libs';
   _ENV_PATH_ = 'PATH';
@@ -844,46 +840,39 @@ begin
   end;
 end;
 
-class function TRickSQLCoreClientLibraryResolver.VendorProperty(
-  const ADriverLink: TComponent): PPropInfo;
-begin
-  Result := nil;
-  if Assigned(ADriverLink) then
-    Result := GetPropInfo(ADriverLink.ClassInfo, _PROPERTY_VENDOR_LIB_);
-end;
-
-class function TRickSQLCoreClientLibraryResolver.ApplyVendorLibrary(
+function VendorLibraryError(
   const AAssignment: TRickSQLVendorLibraryAssignment;
-  const AProperty: PPropInfo; out AError: TRickSQLError): Boolean;
+  const AApplication: TRickSQLVendorLibraryApplyResult): TRickSQLError;
 begin
-  try
-    SetStrProp(AAssignment.DriverLink, AProperty, AAssignment.Path);
-    Result := True;
-  except
-    on E: Exception do
-    begin
-      AError := TRickSQLErrorNormalizer.FromException(E,
-        TRickSQLErrorKind.ClientLibrary, _ERROR_VENDOR_LIB_CONFIGURE_,
-        _OPERATION_);
-      Result := False;
-    end;
+  case AApplication.Status of
+    TRickSQLVendorLibraryApplyStatus.DriverLinkRequired:
+      Exit(TRickSQLCoreClientLibraryResolver.CreateError(
+        _ERROR_DRIVER_LINK_REQUIRED_, ''));
+    TRickSQLVendorLibraryApplyStatus.PropertyUnavailable:
+      Exit(TRickSQLCoreClientLibraryResolver.CreateError(
+        _ERROR_VENDOR_LIB_UNAVAILABLE_, AAssignment.DriverLink.ClassName));
   end;
+  Result := AApplication.Error;
+  Result.Kind := TRickSQLErrorKind.ClientLibrary;
+  if AApplication.Status = TRickSQLVendorLibraryApplyStatus.InspectionFailed then
+    Result.Message := _ERROR_UNEXPECTED_
+  else
+    Result.Message := _ERROR_VENDOR_LIB_CONFIGURE_;
+  Result.Operation := _OPERATION_;
+  Result.HasError := True;
 end;
 
 class function TRickSQLCoreClientLibraryResolver.SetVendorLibrary(
   const AAssignment: TRickSQLVendorLibraryAssignment;
   out AError: TRickSQLError): Boolean;
 var
-  LProperty: PPropInfo;
+  LApplication: TRickSQLVendorLibraryApplyResult;
 begin
-  LProperty := VendorProperty(AAssignment.DriverLink);
-  if not Assigned(LProperty) then
-  begin
-    AError := CreateError(_ERROR_VENDOR_LIB_UNAVAILABLE_,
-      AAssignment.DriverLink.ClassName);
-    Exit(False);
-  end;
-  Result := ApplyVendorLibrary(AAssignment, LProperty, AError);
+  LApplication := TRickSQLServiceFireDACDriverVendorLibrary.TryApply(
+    AAssignment.DriverLink, AAssignment.Path);
+  Result := LApplication.Succeeded;
+  if not Result then
+    AError := VendorLibraryError(AAssignment, LApplication);
 end;
 
 class function TRickSQLCoreClientLibraryResolver.ConfigureInternal(

@@ -31,7 +31,10 @@ implementation
 
 uses
   // FireDAC
-  FireDAC.Phys.ADS;
+  FireDAC.Phys.ADS,
+
+  // RickSQL
+  Rick.SQL.Service.FireDAC.Driver.VendorLibrary;
 
 const
   _DRIVER_ID_ = 'ADS';
@@ -52,7 +55,8 @@ begin
     Exit;
 
   LDriverLink := TFDPhysADSDriverLink.Create(AOwner);
-  LDriverLink.VendorLib := _CLIENT_LIBRARY_32_;
+  TRickSQLServiceFireDACDriverVendorLibrary.Apply(
+    LDriverLink, _CLIENT_LIBRARY_32_);
   Result := LDriverLink;
 end;
 

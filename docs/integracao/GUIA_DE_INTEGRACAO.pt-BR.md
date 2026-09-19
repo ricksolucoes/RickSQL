@@ -49,6 +49,7 @@ RickSQL/
       drivers/
         Rick.SQL.Service.FireDAC.Driver.Base.pas
         Rick.SQL.Service.FireDAC.Driver.Context.pas
+        Rick.SQL.Service.FireDAC.Driver.VendorLibrary.pas
         Rick.SQL.Service.FireDAC.Driver.Firebird.pas
         Rick.SQL.Service.FireDAC.Driver.InterBase.pas
         Rick.SQL.Service.FireDAC.Driver.PostgreSQL.pas
@@ -74,9 +75,15 @@ RickSQL/
     RickSQL.NewTests.dpr
     RickSQL.NewTests.dproj
     src/
+      ClientLibrary/
+        Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas
       Error/
         Rick.SQL.Tests.Error.Integration.pas
         Rick.SQL.Tests.Error.Normalizer.pas
+      Infrastructure/
+        Rick.SQL.Tests.FireDAC.WaitProvider.pas
+      Transaction/
+        Rick.SQL.Tests.Transaction.pas
       Validation/
         Rick.SQL.Tests.Parameter.Validator.pas
   tests/                  # legado
@@ -103,6 +110,30 @@ A unit `Rick.SQL.Core.Driver.Context.Factory.pas`, com a classe `TRickSQLCoreDri
 Ela é consumida tanto por `Rick.SQL.Core.Open.Executor` quanto por `Rick.SQL.Core.Command.Executor`, evitando que os dois executores repitam a lógica de criação do contexto do driver.
 
 A unit `src/error/Rick.SQL.Error.Normalizer.pas` concentra a política compartilhada de normalização de exceptions, sanitização de `Message`/`TechnicalDetail` e extração de metadados FireDAC. Ela fica fora de `core` e `services` para poder ser consumida por ambos sem introduzir uma dependência `services -> core`. `Rick.SQL.Core.Error.Parser` permanece responsável pelas mensagens amigáveis fixas usadas pelos fluxos de core e delega a normalização técnica.
+
+A resolução da client library permanece em `Rick.SQL.Core.ClientLibrary.Resolver`. A aplicação de um caminho já resolvido à propriedade `VendorLib` do DriverLink é centralizada em `Rick.SQL.Service.FireDAC.Driver.VendorLibrary`, classe `TRickSQLServiceFireDACDriverVendorLibrary`. `Driver.Context`, o caminho compatível `ClientLibraryResolver.Configure` e providers que possuem `VendorLib` padrão convergem para essa implementação, sem duplicar a mecânica de atribuição.
+
+O fluxo interno relevante fica, de forma simplificada:
+
+```text
+Open.Executor / Command.Executor
+              ↓
+Driver.Context.Factory
+              ↓
+Driver.Factory + ClientLibraryResolver
+              ↓
+        path resolvido
+              ↓
+        Driver.Context
+              ↓
+     Provider.CreateDriverLink
+              ↓
+FireDAC.Driver.VendorLibrary
+              ↓
+          VendorLib
+```
+
+Essa consolidação é interna: `Driver.Factory`, `Driver.Context.Factory`, a fachada `Rick.SQL`, a API fluente e o algoritmo de resolução da client library mantêm seus contratos.
 
 A política de separação de responsabilidades está documentada em [Controle de toxicidade](../engenharia/CONTROLE_DE_TOXICIDADE.pt-BR.md).
 
@@ -217,6 +248,6 @@ A forma fluente equivalente está detalhada em [API pública](../api/API_PUBLICA
 
 ## Bibliotecas clientes
 
-Alguns bancos exigem bibliotecas nativas, como `fbclient.dll` (Firebird), `libpq.dll` (PostgreSQL) ou `libmysql.dll` (MySQL). O `RickSQL` pode localizar e configurar essas bibliotecas por meio de `Rick.SQL.Core.ClientLibrary.Resolver`, mas não instala, baixa ou copia arquivos no sistema operacional.
+Alguns bancos exigem bibliotecas nativas, como `fbclient.dll` (Firebird), `libpq.dll` (PostgreSQL) ou `libmysql.dll` (MySQL). `Rick.SQL.Core.ClientLibrary.Resolver` localiza e valida o caminho; `Rick.SQL.Service.FireDAC.Driver.VendorLibrary` aplica esse caminho ao `VendorLib` do DriverLink. O `RickSQL` não instala, baixa ou copia arquivos no sistema operacional.
 
 Consulte [Bibliotecas clientes](../bancos/BIBLIOTECAS_CLIENTE.pt-BR.md) para a ordem de procura, arquitetura e nomes esperados por mecanismo.

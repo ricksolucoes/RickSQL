@@ -14,6 +14,8 @@ NewTests/
 ├── RickSQL.NewTests.dpr
 ├── RickSQL.NewTests.dproj
 └── src/
+    ├── ClientLibrary/
+    │   └── Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas
     ├── Error/
     │   ├── Rick.SQL.Tests.Error.Integration.pas
     │   └── Rick.SQL.Tests.Error.Normalizer.pas
@@ -27,7 +29,7 @@ NewTests/
 
 O projeto `RickSQL.NewTests` consome a implementação de produção em `../src` e não depende estruturalmente de `tests/`.
 
-A execução mais recente informada antes da seleção explícita do provider FireDAC executou **108 testes**, com **107 aprovados**, **1 falha** e **0 erros**. A falha ocorreu em `UseTransactionFalse_NaoDeveIntroduzirErroTransacional` porque a factory de `IFDGUIxWaitCursor` não estava registrada. Por inspeção estática, a suíte atual registra **109 métodos DUnit `published` em cinco classes** após a inclusão de `TRickSQLFireDACWaitProviderTests`; esta versão de 109 testes ainda não teve execução integral confirmada. Os detalhes e limites dessa evidência estão em [Testes e homologação](TESTES_E_HOMOLOGACAO.pt-BR.md).
+A suíte atual registra **124 testes DUnit em seis classes**, incluindo `TRickSQLVendorLibraryTests` em `NewTests/src/ClientLibrary/`. Em **19/09/2026**, o DUnit GUI Test Runner executou **124/124**, com **0 falhas**, **0 erros** e **Score 100%**, no ciclo de homologação documentado para Delphi 12 Community Edition / Windows 32-bit. No mesmo ciclo, `RickConnection.dproj` registrou build **Debug/Win32: Success**. Os detalhes e os limites dessas evidências estão em [Testes e homologação](TESTES_E_HOMOLOGACAO.pt-BR.md).
 
 A documentação detalhada da suíte legada permanece separada por finalidade:
 

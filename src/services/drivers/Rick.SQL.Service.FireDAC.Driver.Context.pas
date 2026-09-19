@@ -8,7 +8,6 @@ interface
 uses
   // RTL
   System.Classes,
-  System.TypInfo,
 
   // RickSQL
   Rick.SQL.Model.Contracts,
@@ -26,11 +25,6 @@ type
     function ValidateProvider(const AProvider: IRickSQLDriverProvider): Boolean;
     function CreateDriverLink: Boolean;
     function ConfigureVendorLibrary(const AVendorLibraryPath: string): Boolean;
-    function VendorProperty: PPropInfo;
-    function CanConfigureVendorLibrary(
-      const AVendorLibraryPath: string; out AProperty: PPropInfo): Boolean;
-    function ApplyVendorLibrary(const AVendorLibraryPath: string;
-      const AProperty: PPropInfo): Boolean;
     procedure MarkConfigured;
   public
     constructor Create(const AProvider: IRickSQLDriverProvider;
@@ -50,11 +44,11 @@ uses
 
   // RickSQL
   Rick.SQL.Model.Types,
-  Rick.SQL.Error.Normalizer;
+  Rick.SQL.Error.Normalizer,
+  Rick.SQL.Service.FireDAC.Driver.VendorLibrary;
 
 const
   _OPERATION_ = 'Criação do contexto do driver FireDAC';
-  _PROPERTY_VENDOR_LIB_ = 'VendorLib';
   _ERROR_PROVIDER_NOT_FOUND_ =
     'Não foi possível resolver o driver do banco de dados informado. ' +
     'Informe um mecanismo de banco válido antes de criar a sessão.';
@@ -126,53 +120,37 @@ begin
     FError := CreateDriverError(_ERROR_DRIVER_LINK_NOT_CREATED_, '');
 end;
 
-function TRickSQLServiceFireDACDriverContext.VendorProperty: PPropInfo;
+function VendorLibraryError(
+  const AApplication: TRickSQLVendorLibraryApplyResult): TRickSQLError;
 begin
-  Result := nil;
-  if Assigned(FDriverLink) then
-    Result := GetPropInfo(FDriverLink.ClassInfo, _PROPERTY_VENDOR_LIB_);
+  case AApplication.Status of
+    TRickSQLVendorLibraryApplyStatus.DriverLinkRequired:
+      Exit(TRickSQLServiceFireDACDriverContext.CreateDriverError(
+        _ERROR_DRIVER_LINK_NOT_CREATED_, ''));
+    TRickSQLVendorLibraryApplyStatus.PropertyUnavailable:
+      Exit(TRickSQLServiceFireDACDriverContext.CreateDriverError(
+        _ERROR_VENDOR_LIB_UNAVAILABLE_, ''));
+  end;
+  Result := AApplication.Error;
+  Result.Kind := TRickSQLErrorKind.Driver;
+  if AApplication.Status = TRickSQLVendorLibraryApplyStatus.InspectionFailed then
+    Result.Message := _ERROR_UNEXPECTED_
+  else
+    Result.Message := _ERROR_VENDOR_LIB_CONFIGURE_;
+  Result.Operation := _OPERATION_;
+  Result.HasError := True;
 end;
 
 function TRickSQLServiceFireDACDriverContext.ConfigureVendorLibrary(
   const AVendorLibraryPath: string): Boolean;
 var
-  LProperty: PPropInfo;
+  LApplication: TRickSQLVendorLibraryApplyResult;
 begin
-  if not CanConfigureVendorLibrary(AVendorLibraryPath, LProperty) then
-    Exit(False);
-  if not Assigned(LProperty) then
-    Exit(True);
-  Result := ApplyVendorLibrary(AVendorLibraryPath, LProperty);
-end;
-
-function TRickSQLServiceFireDACDriverContext.CanConfigureVendorLibrary(
-  const AVendorLibraryPath: string; out AProperty: PPropInfo): Boolean;
-begin
-  AProperty := nil;
-  Result := True;
-  if Trim(AVendorLibraryPath) = '' then
-    Exit;
-  AProperty := VendorProperty;
-  if Assigned(AProperty) then
-    Exit;
-  FError := CreateDriverError(_ERROR_VENDOR_LIB_UNAVAILABLE_, '');
-  Result := False;
-end;
-
-function TRickSQLServiceFireDACDriverContext.ApplyVendorLibrary(
-  const AVendorLibraryPath: string; const AProperty: PPropInfo): Boolean;
-begin
-  try
-    SetStrProp(FDriverLink, AProperty, AVendorLibraryPath);
-    Result := True;
-  except
-    on E: Exception do
-    begin
-      FError := TRickSQLErrorNormalizer.FromException(E,
-        TRickSQLErrorKind.Driver, _ERROR_VENDOR_LIB_CONFIGURE_, _OPERATION_);
-      Result := False;
-    end;
-  end;
+  LApplication := TRickSQLServiceFireDACDriverVendorLibrary.TryApply(
+    FDriverLink, AVendorLibraryPath);
+  Result := LApplication.Succeeded;
+  if not Result then
+    FError := VendorLibraryError(LApplication);
 end;
 
 procedure TRickSQLServiceFireDACDriverContext.MarkConfigured;

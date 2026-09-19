@@ -27,7 +27,7 @@ Cada provider é implementado em uma unit própria na pasta `src/services/driver
 | `Access` | `MSAcc` | `ACEODBC.DLL` | 0 |
 | `ODBC` | `ODBC` | `odbc32.dll` | 0 |
 
-Os valores de porta padrão e as bibliotecas cliente são definidos internamente em cada unit de driver (constantes `_DRIVER_ID_`, `DefaultPort` e `AddClientLibrary`), e são aplicados automaticamente quando o consumidor não informa um valor específico em `TRickSQLConnectionOptions`.
+Os valores de porta padrão e os nomes das bibliotecas cliente esperadas são definidos internamente em cada unit de driver (constantes `_DRIVER_ID_`, `DefaultPort` e chamadas a `AddClientLibrary`). A lista de bibliotecas alimenta `TRickSQLCoreClientLibraryResolver`; quando existe um caminho a aplicar, a configuração de `VendorLib` é encaminhada para `TRickSQLServiceFireDACDriverVendorLibrary`.
 
 ## Disponibilidade por configuração de compilação
 

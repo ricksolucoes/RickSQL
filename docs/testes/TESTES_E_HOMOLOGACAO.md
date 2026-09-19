@@ -13,6 +13,8 @@ NewTests/
 ├── RickSQL.NewTests.dpr
 ├── RickSQL.NewTests.dproj
 └── src/
+    ├── ClientLibrary/
+    │   └── Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas
     ├── Error/
     │   ├── Rick.SQL.Tests.Error.Integration.pas
     │   └── Rick.SQL.Tests.Error.Normalizer.pas
@@ -44,32 +46,50 @@ Detailed documentation for the legacy suite is separated by purpose:
 
 ## Official new suite
 
-`NewTests/RickSQL.NewTests.dpr` is the DUnit entry point using the GUI Test Runner. Units under `NewTests/src/Error/` cover shared `TRickSQLError` normalization and integration of the components changed by the exception refactoring. `NewTests/src/Infrastructure/Rick.SQL.Tests.FireDAC.WaitProvider.pas` validates the VCL `IFDGUIxWaitCursor` provider registered by the resolver. `NewTests/src/Validation/Rick.SQL.Tests.Parameter.Validator.pas` covers SQL parameter identification and validation without depending on an external database. `NewTests/src/Transaction/Rick.SQL.Tests.Transaction.pas` covers transaction state, `Start`, `Commit`, `Rollback`, `RollbackAfterFailure`, `Active` compatibility, and `UseTransaction=False` using local SQLite.
+`NewTests/RickSQL.NewTests.dpr` is the DUnit entry point using the GUI Test Runner. Units under `NewTests/src/Error/` cover shared `TRickSQLError` normalization and integration of the components changed by the exception refactoring. `NewTests/src/Infrastructure/Rick.SQL.Tests.FireDAC.WaitProvider.pas` validates the VCL `IFDGUIxWaitCursor` provider registered by the resolver. `NewTests/src/Validation/Rick.SQL.Tests.Parameter.Validator.pas` covers SQL parameter identification and validation without depending on an external database. `NewTests/src/Transaction/Rick.SQL.Tests.Transaction.pas` covers transaction state, `Start`, `Commit`, `Rollback`, `RollbackAfterFailure`, `Active` compatibility, and `UseTransaction=False` using local SQLite. `NewTests/src/ClientLibrary/Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas` covers the canonical `VendorLib` application authority, the compatible `Configure` path, the `Driver.Context`/`Driver.Context.Factory` flow, empty paths, missing properties, setter failures, observable equivalence, and provider-default preservation.
 
-The current suite registers five test classes:
+The current suite registers six test classes:
 
 - `TRickSQLErrorNormalizerTests` — 6 tests covering generic exceptions, sanitization, parser contract, deterministic FireDAC metadata, and preservation of the code actually supplied by SQLite/FireDAC;
 - `TRickSQLErrorIntegrationTests` — 8 integration tests covering Driver Context, Connection, Query, Session, Parameter Binder, Transaction, DataSet Materializer, and Client Library Resolver;
 - `TRickSQLFireDACWaitProviderTests` — 1 infrastructure test confirming the `Forms` provider and creation of `IFDGUIxWaitCursor` in the VCL runner;
 - `TRickSQLParameterValidatorTests` — 70 behavior-oriented DUnit tests covering simple/multiple/repeated parameters, case-insensitive names, extra parameters, strings, comments, false positives/false negatives, and engine-specific lexical constructs represented by the framework. Tests specify the engine explicitly when interpretation depends on the dialect and remain offline/deterministic.
 - `TRickSQLTransactionTests` — 24 DUnit tests covering active/inactive state, deterministic `InTransaction` inspection failure, `Start`, `Commit`, `Rollback`, primary-error preservation in `RollbackAfterFailure`, the compatible `Active` contract, and `UseTransaction=False`.
+- `TRickSQLVendorLibraryTests` — 15 DUnit tests covering canonical `VendorLib` application, empty paths, a DriverLink without `VendorLib`, setter failure, `ClientLibraryResolver.Configure`, `Driver.Context`, `Driver.Context.Factory`, preservation of the `ClientLibrary` and `Driver` classifications, path equivalence, and the InterBase provider default.
 
-### Recorded real execution — 2026-09-18
+### Recorded real execution — 2026-09-19
 
-This execution predates `TRickSQLTransactionTests`. In that state, the suite was executed on **Delphi 12 Community Edition**, targeting **Windows 32-bit**, using the **DUnit GUI Test Runner**. The runner displayed:
+The current official suite was executed with **DUnit + GUI Test Runner**. The supplied evidence records **Delphi 12 Community Edition** and a **Windows 32-bit** target for the current validation round. The runner displayed:
 
 ```text
-Tests:      84
-Run:        84
-Failures:    0
-Errors:      0
-Overrides:   0
-Score:     100%
+Tests:      124
+Run:        124
+Failures:     0
+Errors:       0
+Overrides:    0
+Score:      100%
 ```
 
-The source version actually submitted to this execution contains `CharInSet(CurrentChar(AContext), ['(', ')'])` in `TRickSQLCoreParameterScanner.TryTrackParenthesis`. This records the source state that was validated; by itself it does not change the public parameter contract.
+The runner tree shows `TRickSQLVendorLibraryTests` registered with the other classes, and all displayed tests are successful. The total of 124 matches the `published` methods in the current source: 6 in `TRickSQLErrorNormalizerTests`, 8 in `TRickSQLErrorIntegrationTests`, 1 in `TRickSQLFireDACWaitProviderTests`, 70 in `TRickSQLParameterValidatorTests`, 24 in `TRickSQLTransactionTests`, and 15 in `TRickSQLVendorLibraryTests`.
 
-The result above remains historical evidence for the 84-test version. In a later execution reported during the transaction fix, the runner executed 108 tests, with 107 passed, 1 failure, and 0 errors. The only failure was `UseTransactionFalse_NaoDeveIntroduzirErroTransacional`, whose detail reported a missing `IFDGUIxWaitCursor` factory. The resolver was then changed to explicitly select the Console/VCL/FMX provider, and `TRickSQLFireDACWaitProviderTests` was added. Static inspection of the current version finds 109 `published` methods across five classes. Full execution of this 109-test version has not yet been confirmed. None of these results constitute execution of the legacy `tests/` tree. The real Method Toxicity measurement recorded on 2026-09-18 predates both the transaction unit and the new infrastructure test.
+This execution validates the official `NewTests/` suite; it is not an execution of the legacy `tests/` tree and does not demonstrate Win64, Release, or `FULL_EDITION`.
+
+### Recorded real build — 2026-09-19
+
+The main `RickConnection.dproj` project was compiled in **Delphi 12 Community Edition**, configuration **Debug**, target **Windows 32-bit**. The IDE output records:
+
+```text
+Compiling RickConnection.dproj (Debug, Win32)
+Success
+```
+
+This build demonstrates the configuration shown. It must not be extrapolated as a Win64, Release, or `FULL_EDITION` build.
+
+### Previous validation history
+
+On **2026-09-18**, an earlier suite version that did not yet include `TRickSQLTransactionTests` ran 84 tests with 0 failures and 0 errors. Later, during the transaction fix, a 108-test execution reported 107 passed, 1 failure, and 0 errors; the failure in `UseTransactionFalse_NaoDeveIntroduzirErroTransacional` exposed the missing `IFDGUIxWaitCursor` factory. Explicit Console/VCL/FMX provider selection and `TRickSQLFireDACWaitProviderTests` were added afterward.
+
+Those results are retained only as history. The latest documented validated state is **124/124**, with no failures or errors, on 2026-09-19. The latest real Method Toxicity measurement for `RickSQL.NewTests.dproj`, also on 2026-09-19, is recorded in [Toxicity control](../engenharia/CONTROLE_DE_TOXICIDADE.md).
 
 ## Validation order
 
@@ -146,6 +166,7 @@ As validation criteria—not as a statement that execution has occurred—the de
 - `Open` returns a materialized dataset that remains usable after the internal session is released;
 - `Execute` returns a structured `TRickSQLExecutionResult`;
 - failures covered by the public API are converted into structured errors;
+- client-library resolution remains separate from canonical `VendorLib` application, preserving empty-path behavior and the existing flows' error classifications;
 - memory tests do not report leaks in the scenarios actually executed;
 - executed concurrency scenarios preserve the expected results;
 - the relevant projects compile and run in the Delphi version selected for validation.

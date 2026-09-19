@@ -39,7 +39,10 @@ uses
   System.SysUtils,
 
   // FireDAC
-  FireDAC.Phys.Infx;
+  FireDAC.Phys.Infx,
+
+  // RickSQL
+  Rick.SQL.Service.FireDAC.Driver.VendorLibrary;
 
 const
   _DRIVER_ID_ = 'Infx';
@@ -72,7 +75,8 @@ begin
     Exit;
 
   LDriverLink := TFDPhysInfxDriverLink.Create(AOwner);
-  LDriverLink.VendorLib := _CLIENT_LIBRARY_;
+  TRickSQLServiceFireDACDriverVendorLibrary.Apply(
+    LDriverLink, _CLIENT_LIBRARY_);
   Result := LDriverLink;
 end;
 

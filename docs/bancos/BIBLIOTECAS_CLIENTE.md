@@ -8,6 +8,30 @@ Some databases require a native client library before FireDAC can open a connect
 
 When the selected engine does not require a client library—for example, `SQLite`, whose driver definition declares no entries in `ClientLibraries`—the resolver succeeds immediately without performing any search.
 
+## Resolution and `VendorLib` application
+
+Client-library resolution and applying the resulting path to FireDAC are separate responsibilities:
+
+```text
+TRickSQLCoreClientLibraryResolver
+        │
+        ├── determines whether the engine requires a client library
+        ├── locates and validates the applicable file
+        └── produces the resolved path
+                    ↓
+TRickSQLServiceFireDACDriverVendorLibrary
+        │
+        └── applies the path to the DriverLink VendorLib property
+```
+
+`TRickSQLCoreClientLibraryResolver` remains responsible for the location policy. `VendorLib` application is centralized in `Rick.SQL.Service.FireDAC.Driver.VendorLibrary`, through `TRickSQLServiceFireDACDriverVendorLibrary`; this component does not search for files, validate PE binaries, or resolve providers.
+
+The main `Driver.Context` flow and the compatible `TRickSQLCoreClientLibraryResolver.Configure` path delegate to this same canonical implementation. Providers that need to set a default `VendorLib` also use the same authority, avoiding independent assignment rules.
+
+When the path received by the canonical implementation is empty, application is skipped and an existing `VendorLib` value is preserved. This allows engines that do not require a client library and configurations that depend on the driver's default mechanism to continue without a forced assignment.
+
+The centralized responsibility is **applying** `VendorLib`; the external error classification still belongs to the calling flow. The compatible `Configure` path preserves `ClientLibrary` errors, while `Driver.Context` preserves the `Driver` classification.
+
 ## Search order
 
 When a client library is required, resolution follows this order:
@@ -99,6 +123,6 @@ Informe ClientLibraryPath ou disponibilize uma destas bibliotecas: <lista de bib
 
 ## What RickSQL does not do
 
-The framework does not download, install, copy, or register libraries in the operating system. It only locates libraries already present in the environment and configures the `VendorLib` property on the corresponding FireDAC driver link when that property exists on the resolved driver-link class.
+The framework does not download, install, copy, or register libraries in the operating system. It locates libraries already present in the environment through the resolver and, when a path must be applied, delegates `VendorLib` configuration to the canonical `TRickSQLServiceFireDACDriverVendorLibrary` implementation.
 
 Distribution of required client libraries remains the responsibility of the application that uses the framework.

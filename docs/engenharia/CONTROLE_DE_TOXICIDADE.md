@@ -57,7 +57,8 @@ In the current code, the following responsibilities are centralized:
 - dataset materialization — `Rick.SQL.Core.DataSet.Materializer`;
 - shared exception normalization, sanitization, and technical metadata extraction — `Rick.SQL.Error.Normalizer` under `src/error`;
 - fixed user-facing messages for core flows — `Rick.SQL.Core.Error.Parser`, which delegates technical normalization;
-- driver-context resolution — `Rick.SQL.Core.Driver.Context.Factory`, reused by the `Open` and `Execute` executors.
+- driver-context resolution — `Rick.SQL.Core.Driver.Context.Factory`, reused by the `Open` and `Execute` executors;
+- application of an already resolved path to the DriverLink `VendorLib` property — `Rick.SQL.Service.FireDAC.Driver.VendorLibrary`, reused by `Driver.Context`, the compatible `ClientLibraryResolver.Configure` path, and providers that define a default `VendorLib`.
 
 These centralizations are observable characteristics of the current architecture. Any future change should be reassessed against the code rather than against this list in isolation.
 
@@ -85,24 +86,28 @@ Without that execution:
 
 The minimum rule for any Delphi change is to avoid introducing new toxicity and to avoid worsening pre-existing toxicity outside the authorized scope.
 
-### Recorded real measurement — `RickSQL.NewTests.dproj`
+### Current recorded real measurement — 2026-09-19 — `RickSQL.NewTests.dproj`
 
-On **2026-09-18**, RAD Studio **Delphi 12 Community Edition** ran `Project > Method Toxicity Metrics` for `RickSQL.NewTests.dproj`, targeting **Windows 32-bit**, with `TRickSQLParameterValidatorTests` and the validated version of `Rick.SQL.Core.Parameter.Validator` already included. The supplied capture shows the grid sorted by `Toxicity` in descending order.
+On **2026-09-19**, RAD Studio **Delphi 12 Community Edition** ran `Project > Method Toxicity Metrics` for `RickSQL.NewTests.dproj`, targeting **Windows 32-bit**. The supplied capture shows the grid sorted by `Toxicity` in descending order and already includes methods from `TRickSQLVendorLibraryTests`.
 
 | Evidence visible in the capture | Value |
 |---|---:|
-| highest displayed `Toxicity` | 0.325 |
+| highest displayed `Toxicity` | 0.350 |
 | highest visible `Length` | 14 |
 | highest visible `Parameters` | 4 |
 | highest visible `If Depth` | 1 |
 | highest visible `Cyclomatic Complexity` | 3 |
 | official `Toxicity` threshold | 1 |
 
-Because the grid is sorted by `Toxicity` and the first displayed value is `0.325`, **no Toxicity-threshold violation was observed in the measured test project**. This does not mean `Toxicity = 0`: methods have tool-calculated values below the threshold, including `0.325`, `0.292`, `0.258`, and other values visible in the capture.
+Because the grid is sorted by `Toxicity` and the first displayed value is `0.350`, **no violation of the official Toxicity threshold was observed in the measured test project**. This does not mean `Toxicity = 0`; it means the values shown by the tool are below the official threshold.
 
-The capture also shows methods from `TRickSQLParameterValidatorTests`, so this recorded measurement corresponds to the test project after the new SQL-validation coverage was added. The visible `Parameters = 4` value remains below the baseline of 6; it exceeds the historical preference for at most two simple parameters, but does not by itself represent a violation of the official Toxicity threshold.
+The presence of `TRickSQLVendorLibraryTests` methods in the grid demonstrates that the measurement corresponds to `RickSQL.NewTests.dproj` after the `VendorLib` consolidation coverage was added. In the same validation round, the official suite ran 124 tests, with 124 executed, 0 failures, and 0 errors; execution details are recorded in [Tests and validation](../testes/TESTES_E_HOMOLOGACAO.md).
 
-This measurement is specific to `RickSQL.NewTests.dproj` and the **Windows 32-bit** configuration shown. It must not be extrapolated as a real measurement of the legacy `tests/` suite, another platform/configuration, or projects that were not submitted to the tool. Production units referenced by `RickSQL.NewTests.dproj` participate in the project build, but the capture does not support claiming that every consumer project of `src/` was measured.
+This measurement is specific to `RickSQL.NewTests.dproj` and the **Windows 32-bit** configuration shown. It must not be extrapolated as a real measurement of the legacy `tests/` suite, Win64, Release, `FULL_EDITION`, or projects that were not submitted to the tool.
+
+### Historical recorded measurement — 2026-09-18
+
+The previous measurement of the same project, also on **Delphi 12 Community Edition** and **Windows 32-bit**, was recorded before the transaction, FireDAC infrastructure, and `VendorLib` consolidation units were added. In that capture, the highest displayed `Toxicity` was `0.325`, with visible `Length` up to `14`, `Parameters` up to `4`, `If Depth` up to `1`, and `Cyclomatic Complexity` up to `3`. This record is kept only as project-evolution history; the 2026-09-19 measurement is the latest real measurement documented here.
 
 ## Dead code
 

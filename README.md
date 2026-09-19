@@ -199,9 +199,9 @@ Detailed documentation is not distributed across `tests` and `samples`; the cano
 
 ## 🧪 Tests
 
-The official suite for new refactorings and behavioral fixes lives under `NewTests/` and uses DUnit with the GUI Test Runner. Exception-normalization tests are under `NewTests/src/Error/`, SQL parameter validation/identification coverage under `NewTests/src/Validation/`, transaction coverage under `NewTests/src/Transaction/`, and FireDAC provider verification under `NewTests/src/Infrastructure/`. The `tests/` tree remains the legacy suite and reference material; `NewTests/` does not structurally depend on it.
+The official suite for new refactorings and behavioral fixes lives under `NewTests/` and uses DUnit with the GUI Test Runner. Exception-normalization tests are under `NewTests/src/Error/`, SQL parameter validation/identification coverage under `NewTests/src/Validation/`, transaction coverage under `NewTests/src/Transaction/`, FireDAC provider verification under `NewTests/src/Infrastructure/`, and canonical `VendorLib` application coverage under `NewTests/src/ClientLibrary/`. The `tests/` tree remains the legacy suite and reference material; `NewTests/` does not structurally depend on it.
 
-The most recent execution reported before this change ran **108 tests**, with **107 passed**, **1 failure**, and **0 errors**. The failure exposed the missing `IFDGUIxWaitCursor` factory and led to the explicit provider selection implemented now. Static inspection of the current suite finds **109 DUnit `published` methods** after adding the dedicated provider test; full execution of this version has not yet been confirmed. Details and evidence boundaries are centralized under [`docs/testes`](docs/testes/README.md).
+On **2026-09-19**, the official suite executed **124/124 tests**, with **0 failures**, **0 errors**, and **Score 100%** in the DUnit GUI Test Runner. In the same validation round, `RickConnection.dproj` recorded a **Debug/Win32: Success** build in Delphi 12 Community Edition, and `RickSQL.NewTests.dproj` was measured with Method Toxicity Metrics on Windows 32-bit, with the highest visible `Toxicity` at **0.350**. Details and evidence boundaries are centralized under [`docs/testes`](docs/testes/README.md) and [Toxicity control](docs/engenharia/CONTROLE_DE_TOXICIDADE.md).
 
 ## 📜 License
 

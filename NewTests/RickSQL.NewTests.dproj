@@ -123,6 +123,7 @@
         <DCCReference Include="src\Infrastructure\Rick.SQL.Tests.FireDAC.WaitProvider.pas"/>
         <DCCReference Include="src\Validation\Rick.SQL.Tests.Parameter.Validator.pas"/>
         <DCCReference Include="src\Transaction\Rick.SQL.Tests.Transaction.pas"/>
+        <DCCReference Include="src\ClientLibrary\Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
