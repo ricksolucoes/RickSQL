@@ -70,7 +70,9 @@ O método `TRickSQL.Execute` não retorna dataset algum. Ele retorna `TRickSQLEx
 
 Quando `TRickSQLCommandOptions.UseTransaction` está ativo (valor padrão `True`), `Rick.SQL.Core.Command.Executor` inicia uma transação (`TRickSQLServiceFireDACTransaction.Start`) antes de executar o comando, confirma (`Commit`) em caso de sucesso e desfaz (`Rollback`) em caso de falha, por meio de `RollbackAfterFailure`. Quando ocorre uma falha adicional durante o rollback, o detalhe técnico dessa falha é anexado ao detalhe técnico do erro original (com o prefixo "Falha adicional ao desfazer a transação:"), sem substituir a causa original.
 
-Nenhuma transação deve permanecer aberta após o encerramento de um comando: `Commit` e `Rollback` verificam, após a chamada ao FireDAC, se a conexão realmente saiu do estado `InTransaction`; caso contrário, retornam erro estruturado (`TRickSQLErrorKind.Transaction`).
+Nenhuma transação deve permanecer aberta após o encerramento de um comando: `Commit` e `Rollback` verificam, após a chamada ao FireDAC, se a conexão realmente saiu do estado `InTransaction`; caso contrário, retornam erro estruturado (`TRickSQLErrorKind.Transaction`). Internamente, a leitura de `InTransaction` distingue estado ativo, estado inativo e falha de inspeção; uma exception nessa leitura é normalizada como erro transacional e não é interpretada como estado inativo.
+
+O método `TRickSQLServiceFireDACTransaction.Active` mantém o contrato Boolean histórico para compatibilidade, inclusive retornando `False` quando a inspeção lança exception. Os fluxos internos de `Start`, `Commit`, `Rollback` e `RollbackAfterFailure` não dependem desse comportamento ambíguo.
 
 ## Memória
 

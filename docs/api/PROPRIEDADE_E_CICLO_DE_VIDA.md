@@ -69,7 +69,9 @@ The result of `Open` does not depend on an active connection. Because the data h
 
 When `TRickSQLCommandOptions.UseTransaction` is enabled (default: `True`), `Rick.SQL.Core.Command.Executor` starts a transaction (`TRickSQLServiceFireDACTransaction.Start`) before executing the command, commits it (`Commit`) on success, and rolls it back (`Rollback`) on failure through `RollbackAfterFailure`. If an additional failure occurs during rollback, its technical detail is appended to the original error's technical detail using the literal prefix `"Falha adicional ao desfazer a transação:"`, without replacing the original cause.
 
-No transaction should remain open after a command finishes. After calling FireDAC, both `Commit` and `Rollback` verify that the connection actually left the `InTransaction` state; otherwise, they return a structured `TRickSQLErrorKind.Transaction` error.
+No transaction should remain open after a command finishes. After calling FireDAC, both `Commit` and `Rollback` verify that the connection actually left the `InTransaction` state; otherwise, they return a structured `TRickSQLErrorKind.Transaction` error. Internally, reading `InTransaction` distinguishes active state, inactive state, and inspection failure; an exception raised by that read is normalized as a transaction error and is not interpreted as an inactive state.
+
+`TRickSQLServiceFireDACTransaction.Active` keeps its historical Boolean contract for compatibility, including returning `False` when state inspection raises an exception. The internal `Start`, `Commit`, `Rollback`, and `RollbackAfterFailure` flows do not depend on that ambiguous behavior.
 
 ## Memory
 

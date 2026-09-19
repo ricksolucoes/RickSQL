@@ -1,7 +1,6 @@
-program RickSQL.Sample.Console;
+﻿program RickSQL.Sample.Console;
 
 {$APPTYPE CONSOLE}
-{$DEFINE CONSOLE_CONNECTION}
 
 uses
   System.Classes,

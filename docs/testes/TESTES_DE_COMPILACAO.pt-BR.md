@@ -29,7 +29,7 @@ Os projetos executáveis estão em [`tests/compilacao`](../../tests/compilacao/)
 
 Os providers de SQL Server, Oracle, DB2, SQL Anywhere, Informix e ODBC são condicionados a `FULL_EDITION`. Testes que exercitam métodos funcionais desses providers devem ser compilados com esse símbolo configurado em **Project > Options > Delphi Compiler > Conditional defines** ou por `-D`.
 
-Como esses testes são aplicações console, projetos que compilam o fluxo de `Rick.SQL.Core.ClientLibrary.Resolver` devem definir também `CONSOLE_CONNECTION` no nível do projeto para selecionar `FireDAC.ConsoleUI.Wait`.
+Como esses testes são aplicações console, projetos que compilam `Rick.SQL.Core.ClientLibrary.Resolver` selecionam `FireDAC.ConsoleUI.Wait` automaticamente pelo símbolo `CONSOLE`; não é necessário define específico do RickSQL para esse provider.
 
 ## Library Path
 

@@ -163,14 +163,15 @@ unit Rick.SQL.Core.Command.Validator;
 
 This is an editorial maintenance rule. It must not be used to claim automatically that every historical unit already follows the pattern without inspection.
 
-## Visual interface and `CONSOLE_CONNECTION`
+## FireDAC wait provider
 
-The core does not create visual components or display messages. `Rick.SQL.Core.ClientLibrary.Resolver` has a FireDAC wait-unit dependency selected at compile time:
+The core does not create visual components or display messages. `Rick.SQL.Core.ClientLibrary.Resolver` selects at compile time only the `IFDGUIxWaitCursor` implementation required by FireDAC:
 
-- default: `FireDAC.FMXUI.Wait`;
-- with `CONSOLE_CONNECTION`: `FireDAC.ConsoleUI.Wait`.
+- `CONSOLE`: `FireDAC.ConsoleUI.Wait`;
+- `RICK_VCL_CONNECTION`: `FireDAC.VCLUI.Wait`;
+- `RICK_FMX_CONNECTION`: `FireDAC.FMXUI.Wait`.
 
-Console projects must define `CONSOLE_CONNECTION` at compiler-options level so the symbol reaches the resolver unit.
+`RICK_VCL_CONNECTION` and `RICK_FMX_CONNECTION` are mutually exclusive. Non-console hosts must explicitly declare one of them; missing configuration is treated as a compile-time error.
 
 ## Messages
 
@@ -215,7 +216,7 @@ The detected value is replaced with `***` in textual error surfaces processed by
 [ ] Model does not depend on error/core/services.
 [ ] Error normalizer does not depend on core/services.
 [ ] The core creates no visual components.
-[ ] The FireDAC Wait dependency respects CONSOLE_CONNECTION when applicable.
+[ ] The FireDAC Wait provider matches the host: CONSOLE, RICK_VCL_CONNECTION, or RICK_FMX_CONNECTION.
 [ ] No mutable global state is introduced without explicit justification.
 ```
 

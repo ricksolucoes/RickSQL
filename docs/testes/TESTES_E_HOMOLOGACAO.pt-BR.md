@@ -16,6 +16,10 @@ NewTests/
     ├── Error/
     │   ├── Rick.SQL.Tests.Error.Integration.pas
     │   └── Rick.SQL.Tests.Error.Normalizer.pas
+    ├── Infrastructure/
+    │   └── Rick.SQL.Tests.FireDAC.WaitProvider.pas
+    ├── Transaction/
+    │   └── Rick.SQL.Tests.Transaction.pas
     └── Validation/
         └── Rick.SQL.Tests.Parameter.Validator.pas
 
@@ -40,17 +44,19 @@ A documentação detalhada da suíte legada está separada por finalidade:
 
 ## Nova suíte oficial
 
-O projeto `NewTests/RickSQL.NewTests.dpr` é o ponto de entrada DUnit com GUI Test Runner. As units registradas em `NewTests/src/Error/` cobrem a normalização compartilhada de `TRickSQLError` e a integração dos componentes alterados pela refatoração de exceptions. A unit `NewTests/src/Validation/Rick.SQL.Tests.Parameter.Validator.pas` cobre a identificação e a validação de parâmetros SQL sem depender de conexão ou banco externo.
+O projeto `NewTests/RickSQL.NewTests.dpr` é o ponto de entrada DUnit com GUI Test Runner. As units registradas em `NewTests/src/Error/` cobrem a normalização compartilhada de `TRickSQLError` e a integração dos componentes alterados pela refatoração de exceptions. A unit `NewTests/src/Infrastructure/Rick.SQL.Tests.FireDAC.WaitProvider.pas` valida o provider VCL de `IFDGUIxWaitCursor` registrado pelo resolver. A unit `NewTests/src/Validation/Rick.SQL.Tests.Parameter.Validator.pas` cobre a identificação e a validação de parâmetros SQL sem depender de conexão ou banco externo. A unit `NewTests/src/Transaction/Rick.SQL.Tests.Transaction.pas` cobre estado transacional, `Start`, `Commit`, `Rollback`, `RollbackAfterFailure`, compatibilidade de `Active` e `UseTransaction=False` usando SQLite local.
 
-A suíte atual registra três classes de teste:
+A suíte atual registra cinco classes de teste:
 
 - `TRickSQLErrorNormalizerTests` — 6 testes para exception genérica, sanitização, contrato do parser, metadata FireDAC determinística e preservação do código realmente fornecido pelo SQLite/FireDAC;
 - `TRickSQLErrorIntegrationTests` — 8 testes de integração cobrindo Driver Context, Connection, Query, Session, Parameter Binder, Transaction, DataSet Materializer e Client Library Resolver;
+- `TRickSQLFireDACWaitProviderTests` — 1 teste de infraestrutura que confirma o provider `Forms` e a criação de `IFDGUIxWaitCursor` no runner VCL;
 - `TRickSQLParameterValidatorTests` — 70 testes DUnit de comportamento cobrindo parâmetros simples/múltiplos/repetidos, case-insensitive, parâmetros extras, strings, comentários, falsos positivos/falsos negativos e construções lexicais específicas dos engines representados pelo framework. Os testes informam explicitamente o engine quando a interpretação depende do dialeto e permanecem offline/determinísticos.
+- `TRickSQLTransactionTests` — 24 testes DUnit cobrindo estado ativo/inativo, falha determinística de inspeção de `InTransaction`, `Start`, `Commit`, `Rollback`, preservação do erro primário em `RollbackAfterFailure`, contrato compatível de `Active` e execução com `UseTransaction=False`.
 
 ### Execução real registrada — 18/09/2026
 
-A suíte foi executada no **Delphi 12 Community Edition**, com alvo **Windows 32-bit**, utilizando o **DUnit GUI Test Runner**. O resultado exibido pelo runner foi:
+Essa execução antecede a inclusão de `TRickSQLTransactionTests`. Naquele estado, a suíte foi executada no **Delphi 12 Community Edition**, com alvo **Windows 32-bit**, utilizando o **DUnit GUI Test Runner**. O resultado exibido pelo runner foi:
 
 ```text
 Tests:      84
@@ -63,7 +69,7 @@ Score:     100%
 
 A versão efetivamente submetida a essa execução contém, em `TRickSQLCoreParameterScanner.TryTrackParenthesis`, a expressão `CharInSet(CurrentChar(AContext), ['(', ')'])`. Esse registro identifica o estado do fonte homologado; não representa, por si só, uma mudança do contrato público de parâmetros.
 
-O resultado confirma a execução integral da suíte `NewTests` registrada pelo runner nesse ambiente. Ele não constitui execução da árvore legada `tests/`, nem comprova bancos externos ou cenários que não façam parte desses 84 testes. A medição real de Method Toxicity do projeto de testes está registrada em [Controle de toxicidade](../engenharia/CONTROLE_DE_TOXICIDADE.pt-BR.md).
+O resultado acima continua sendo evidência histórica da versão de 84 testes. Em execução posterior informada durante a correção transacional, o runner executou 108 testes, com 107 aprovados, 1 falha e 0 erros. A única falha foi `UseTransactionFalse_NaoDeveIntroduzirErroTransacional`, cujo detalhe informou ausência da factory de `IFDGUIxWaitCursor`. O resolver foi então alterado para selecionar explicitamente o provider Console/VCL/FMX, e foi adicionado `TRickSQLFireDACWaitProviderTests`. Por inspeção estática, a versão atual registra 109 métodos `published` em cinco classes. A execução integral desta versão de 109 testes ainda não foi confirmada. Nenhum desses resultados constitui execução da árvore legada `tests/`. A medição real de Method Toxicity registrada em 18/09/2026 antecede tanto a unit transacional quanto o novo teste de infraestrutura.
 
 ## Ordem de homologação
 
@@ -129,7 +135,7 @@ RickSQL\src\services
 RickSQL\src\services\drivers
 ```
 
-Projetos console que compilam o caminho de `Rick.SQL.Core.ClientLibrary.Resolver` devem definir `CONSOLE_CONNECTION` no nível do projeto. Cenários que exercitam SQL Server, Oracle, DB2, SQL Anywhere, Informix ou ODBC funcionalmente devem considerar `FULL_EDITION`.
+Projetos console selecionam `FireDAC.ConsoleUI.Wait` automaticamente por `CONSOLE`. O runner VCL `NewTests` define `RICK_VCL_CONNECTION`, e projetos FMX devem definir `RICK_FMX_CONNECTION`. `RICK_VCL_CONNECTION` e `RICK_FMX_CONNECTION` são mutuamente exclusivos. Cenários que exercitam SQL Server, Oracle, DB2, SQL Anywhere, Informix ou ODBC funcionalmente devem considerar `FULL_EDITION`.
 
 ## Critérios de aceite
 

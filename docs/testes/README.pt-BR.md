@@ -17,13 +17,17 @@ NewTests/
     ├── Error/
     │   ├── Rick.SQL.Tests.Error.Integration.pas
     │   └── Rick.SQL.Tests.Error.Normalizer.pas
+    ├── Infrastructure/
+    │   └── Rick.SQL.Tests.FireDAC.WaitProvider.pas
+    ├── Transaction/
+    │   └── Rick.SQL.Tests.Transaction.pas
     └── Validation/
         └── Rick.SQL.Tests.Parameter.Validator.pas
 ```
 
 O projeto `RickSQL.NewTests` consome a implementação de produção em `../src` e não depende estruturalmente de `tests/`.
 
-A execução registrada no Delphi 12 Community Edition, alvo Windows 32-bit, executou **84 de 84 testes**, com **0 falhas** e **0 erros**. A suíte inclui 70 testes de `TRickSQLParameterValidatorTests`, além dos 14 testes já existentes de normalização/integração de erros. Os detalhes da execução, da cobertura e do escopo dessa evidência estão em [Testes e homologação](TESTES_E_HOMOLOGACAO.pt-BR.md).
+A execução mais recente informada antes da seleção explícita do provider FireDAC executou **108 testes**, com **107 aprovados**, **1 falha** e **0 erros**. A falha ocorreu em `UseTransactionFalse_NaoDeveIntroduzirErroTransacional` porque a factory de `IFDGUIxWaitCursor` não estava registrada. Por inspeção estática, a suíte atual registra **109 métodos DUnit `published` em cinco classes** após a inclusão de `TRickSQLFireDACWaitProviderTests`; esta versão de 109 testes ainda não teve execução integral confirmada. Os detalhes e limites dessa evidência estão em [Testes e homologação](TESTES_E_HOMOLOGACAO.pt-BR.md).
 
 A documentação detalhada da suíte legada permanece separada por finalidade:
 

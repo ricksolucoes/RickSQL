@@ -166,29 +166,34 @@ FireDAC.Phys.MSSQL;
 
 Essas referências são tratadas internamente pelos providers do `RickSQL`, localizados em `src/services/drivers`, e vinculadas ao executável por meio da unit `Rick.SQL.Core.Driver.Factory`, que referencia todas as units de driver em sua cláusula `uses` da seção `implementation`.
 
-## Ausência de package e interface visual
+## Ausência de package e seleção do provider FireDAC
 
 O `RickSQL` não possui:
 
 - arquivo `.dpk`;
 - instalação de package;
 - registro na paleta de componentes;
-- componentes visuais;
-- dependência de VCL no código interno (`src/`).
+- componentes visuais próprios.
 
-O framework não exige que o consumidor seja uma aplicação FMX. Existe, porém, uma seleção condicional da unit de espera do FireDAC em `Rick.SQL.Core.ClientLibrary.Resolver`: sem `CONSOLE_CONNECTION`, a compilação referencia `FireDAC.FMXUI.Wait`; com `CONSOLE_CONNECTION`, referencia `FireDAC.ConsoleUI.Wait`.
+O código interno seleciona condicionalmente apenas a implementação de `IFDGUIxWaitCursor` exigida pelo FireDAC. `Rick.SQL.Core.ClientLibrary.Resolver` referencia `FireDAC.ConsoleUI.Wait`, `FireDAC.VCLUI.Wait` ou `FireDAC.FMXUI.Wait` conforme o host informado na compilação. Isso não transforma o RickSQL em componente visual nem altera sua API pública.
 
 A distribuição do framework é feita por código-fonte, acompanhada da documentação centralizada em `docs/` e dos arquivos de licença presentes na raiz do projeto.
 
 ## Diretivas de compilação
 
-### Aplicações console — `CONSOLE_CONNECTION`
+### Provider de espera do FireDAC
 
-Projetos console devem definir `CONSOLE_CONNECTION` como *Conditional Define* do projeto. A diretiva é lida por `Rick.SQL.Core.ClientLibrary.Resolver`, portanto precisa estar disponível durante a compilação dessa unit. Configure o símbolo em **Project > Options > Delphi Compiler > Conditional defines** (ou por `-D` no compilador).
+A seleção segue este contrato:
 
-Um `{$DEFINE CONSOLE_CONNECTION}` colocado somente no `.dpr` não é suficiente para alterar a compilação de uma unit separada que consulta o símbolo. Por isso, o projeto [`samples/console/RickSQL.Sample.Console.dproj`](../../samples/console/RickSQL.Sample.Console.dproj) define o símbolo nas opções do compilador.
+| Host | Condição | Provider |
+| --- | --- | --- |
+| Console | `CONSOLE` | `FireDAC.ConsoleUI.Wait` |
+| VCL | `RICK_VCL_CONNECTION` | `FireDAC.VCLUI.Wait` |
+| FMX | `RICK_FMX_CONNECTION` | `FireDAC.FMXUI.Wait` |
 
-O sample console demonstra o consumo da fachada `Rick.SQL` nesse cenário.
+Aplicações console não precisam de define específico do RickSQL. Aplicações VCL devem definir `RICK_VCL_CONNECTION`, e aplicações FMX devem definir `RICK_FMX_CONNECTION`, no nível do projeto. Os símbolos `RICK_VCL_CONNECTION` e `RICK_FMX_CONNECTION` são mutuamente exclusivos. Em uma aplicação não-console, a ausência de ambos provoca erro de compilação.
+
+O sample console usa `CONSOLE` automaticamente; o sample FMX define `RICK_FMX_CONNECTION`; o `NewTests`, por ser VCL, define `RICK_VCL_CONNECTION`. No sample de serviço Windows, Debug é console e Release define `RICK_VCL_CONNECTION`, coerente com o host baseado em `Vcl.SvcMgr`.
 
 ### Providers condicionais — `FULL_EDITION`
 

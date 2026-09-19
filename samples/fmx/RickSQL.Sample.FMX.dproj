@@ -91,6 +91,7 @@
         <DCC_K>false</DCC_K>
         <DCC_N>false</DCC_N>
         <DCC_S>false</DCC_S>
+        <DCC_Define>RICK_FMX_CONNECTION;$(DCC_Define)</DCC_Define>
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <SanitizedProjectName>RickSQL_Sample_FMX</SanitizedProjectName>
         <VerInfo_Locale>1046</VerInfo_Locale>

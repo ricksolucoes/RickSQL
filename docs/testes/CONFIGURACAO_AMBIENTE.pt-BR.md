@@ -16,7 +16,7 @@ RickSQL\src\services\drivers
 RickSQL\tests\integracao
 ```
 
-Como os projetos são console e compilam o núcleo, configure `CONSOLE_CONNECTION` no nível do projeto quando o fluxo incluir `Rick.SQL.Core.ClientLibrary.Resolver`.
+Como os projetos legados desta seção são aplicações console, `Rick.SQL.Core.ClientLibrary.Resolver` seleciona `FireDAC.ConsoleUI.Wait` automaticamente por meio de `CONSOLE`; não é necessário define específico do RickSQL para esse provider.
 
 ## SQLite
 

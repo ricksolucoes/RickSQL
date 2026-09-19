@@ -21,6 +21,9 @@ type
       out AError: TRickSQLError; const AOperation: string): Boolean; static;
     class function ValidateConnection(const AConnection: TFDConnection;
       out AError: TRickSQLError; const AOperation: string): Boolean; static;
+    class function TryActive(const AConnection: TFDConnection;
+      out AActive: Boolean; out AError: TRickSQLError;
+      const AOperation: string): Boolean; static;
     class function StartTransaction(const AConnection: TFDConnection;
       out AError: TRickSQLError): Boolean; static;
     class function FinishTransaction(const AConnection: TFDConnection;
@@ -64,21 +67,29 @@ const
     'Não foi possível confirmar a transação do banco de dados. Verifique o estado da conexão e tente novamente.';
   _ERROR_ROLLBACK_ =
     'Não foi possível desfazer a transação do banco de dados. Verifique o estado da conexão.';
+  _ERROR_STATE_INSPECTION_ =
+    'Não foi possível determinar o estado da transação do banco de dados.';
   _DETAIL_TRANSACTION_NOT_ACTIVE_ =
     'A transação não ficou ativa após a solicitação.';
   _DETAIL_TRANSACTION_STILL_ACTIVE_ =
     'A transação permaneceu ativa após a solicitação.';
+  _DETAIL_STATE_INSPECTION_PREFIX_ = 'Falha ao consultar InTransaction: ';
   _ROLLBACK_DETAIL_PREFIX_ = 'Falha adicional ao desfazer a transação: ';
 
 class function TRickSQLServiceFireDACTransaction.Start(
   const AConnection: TFDConnection; out AError: TRickSQLError): Boolean;
+var
+  LActive: Boolean;
 begin
   AError := TRickSQLError.Empty;
 
   if not ValidateConnection(AConnection, AError, _OPERATION_START_) then
     Exit(False);
 
-  if Active(AConnection) then
+  if not TryActive(AConnection, LActive, AError, _OPERATION_START_) then
+    Exit(False);
+
+  if LActive then
     Exit(True);
 
   Result := StartTransaction(AConnection, AError);
@@ -86,13 +97,18 @@ end;
 
 class function TRickSQLServiceFireDACTransaction.Commit(
   const AConnection: TFDConnection; out AError: TRickSQLError): Boolean;
+var
+  LActive: Boolean;
 begin
   AError := TRickSQLError.Empty;
 
   if not ValidateAssigned(AConnection, AError, _OPERATION_COMMIT_) then
     Exit(False);
 
-  if not Active(AConnection) then
+  if not TryActive(AConnection, LActive, AError, _OPERATION_COMMIT_) then
+    Exit(False);
+
+  if not LActive then
     Exit(True);
 
   Result := FinishTransaction(AConnection, AError, _OPERATION_COMMIT_,
@@ -101,13 +117,18 @@ end;
 
 class function TRickSQLServiceFireDACTransaction.Rollback(
   const AConnection: TFDConnection; out AError: TRickSQLError): Boolean;
+var
+  LActive: Boolean;
 begin
   AError := TRickSQLError.Empty;
 
   if not ValidateAssigned(AConnection, AError, _OPERATION_ROLLBACK_) then
     Exit(False);
 
-  if not Active(AConnection) then
+  if not TryActive(AConnection, LActive, AError, _OPERATION_ROLLBACK_) then
+    Exit(False);
+
+  if not LActive then
     Exit(True);
 
   Result := FinishTransaction(AConnection, AError, _OPERATION_ROLLBACK_,
@@ -117,11 +138,22 @@ end;
 class function TRickSQLServiceFireDACTransaction.RollbackAfterFailure(
   const AConnection: TFDConnection; var AError: TRickSQLError): Boolean;
 var
+  LActive: Boolean;
   LRollbackError: TRickSQLError;
 begin
   Result := True;
 
-  if not Active(AConnection) then
+  if not Assigned(AConnection) then
+    Exit;
+
+  if not TryActive(AConnection, LActive, LRollbackError,
+    _OPERATION_ROLLBACK_) then
+  begin
+    AppendRollbackDetail(AError, LRollbackError);
+    Exit(False);
+  end;
+
+  if not LActive then
     Exit;
 
   Result := Rollback(AConnection, LRollbackError);
@@ -132,6 +164,8 @@ end;
 class function TRickSQLServiceFireDACTransaction.Active(
   const AConnection: TFDConnection): Boolean;
 begin
+  // Contrato histórico: falha de inspeção continua representada como False.
+  // Os fluxos internos usam TryActive para preservar a distinção do erro.
   Result := False;
 
   if not Assigned(AConnection) then
@@ -176,13 +210,39 @@ begin
       AOperation);
 end;
 
+class function TRickSQLServiceFireDACTransaction.TryActive(
+  const AConnection: TFDConnection; out AActive: Boolean;
+  out AError: TRickSQLError; const AOperation: string): Boolean;
+begin
+  AActive := False;
+  AError := TRickSQLError.Empty;
+
+  try
+    AActive := AConnection.InTransaction;
+    Result := True;
+  except
+    on E: Exception do
+    begin
+      AError := TRickSQLErrorNormalizer.FromException(E,
+        TRickSQLErrorKind.Transaction, _ERROR_STATE_INSPECTION_, AOperation);
+      AError.TechnicalDetail := _DETAIL_STATE_INSPECTION_PREFIX_ +
+        AError.TechnicalDetail;
+      Result := False;
+    end;
+  end;
+end;
+
 class function TRickSQLServiceFireDACTransaction.StartTransaction(
   const AConnection: TFDConnection; out AError: TRickSQLError): Boolean;
+var
+  LActive: Boolean;
 begin
   Result := False;
   try
     AConnection.StartTransaction;
-    Result := Active(AConnection);
+    if not TryActive(AConnection, LActive, AError, _OPERATION_START_) then
+      Exit(False);
+    Result := LActive;
     if not Result then
       AError := CreateTransactionError(_ERROR_START_,
         _DETAIL_TRANSACTION_NOT_ACTIVE_, _OPERATION_START_);
@@ -197,6 +257,8 @@ class function TRickSQLServiceFireDACTransaction.FinishTransaction(
   const AConnection: TFDConnection; out AError: TRickSQLError;
   const AOperation: string; const AMessage: string;
   const ACommit: Boolean): Boolean;
+var
+  LActive: Boolean;
 begin
   Result := False;
 
@@ -205,7 +267,9 @@ begin
       AConnection.Commit
     else
       AConnection.Rollback;
-    Result := not Active(AConnection);
+    if not TryActive(AConnection, LActive, AError, AOperation) then
+      Exit(False);
+    Result := not LActive;
     if not Result then
       AError := CreateTransactionError(AMessage,
         _DETAIL_TRANSACTION_STILL_ACTIVE_, AOperation);

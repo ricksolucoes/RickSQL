@@ -144,11 +144,19 @@ A referência completa das duas superfícies públicas, incluindo `IRickSQL*`, o
 
 ## ⚙️ Diretivas de compilação
 
-### `CONSOLE_CONNECTION`
+### Provider de espera do FireDAC
 
-Projetos console devem definir `CONSOLE_CONNECTION` nas opções do compilador (**Project > Options > Delphi Compiler > Conditional defines**) ou por `-D`. O símbolo é lido dentro de `Rick.SQL.Core.ClientLibrary.Resolver`, portanto um `{$DEFINE ...}` isolado no `.dpr` não se propaga para as units já compiladas.
+`Rick.SQL.Core.ClientLibrary.Resolver` seleciona em tempo de compilação a implementação de `IFDGUIxWaitCursor` exigida pelo FireDAC:
 
-Com o símbolo definido, o resolvedor usa `FireDAC.ConsoleUI.Wait`; sem ele, usa `FireDAC.FMXUI.Wait`. Isso não transforma o framework em componente visual: a seleção existe para o mecanismo de espera do FireDAC.
+| Host | Condição | Provider |
+| --- | --- | --- |
+| Console | `CONSOLE` | `FireDAC.ConsoleUI.Wait` |
+| VCL | `RICK_VCL_CONNECTION` | `FireDAC.VCLUI.Wait` |
+| FMX | `RICK_FMX_CONNECTION` | `FireDAC.FMXUI.Wait` |
+
+Aplicações console não precisam de define específico do RickSQL. Aplicações VCL devem definir `RICK_VCL_CONNECTION` e aplicações FMX devem definir `RICK_FMX_CONNECTION` nas opções do compilador (**Project > Options > Delphi Compiler > Conditional defines**) ou por `-D`.
+
+`RICK_VCL_CONNECTION` e `RICK_FMX_CONNECTION` são mutuamente exclusivos. Em aplicações não-console, a ausência de ambos interrompe a compilação em vez de selecionar um provider arbitrário. A seleção existe somente para registrar o mecanismo de espera do FireDAC e não altera a API pública do RickSQL.
 
 ### `FULL_EDITION`
 
@@ -191,9 +199,9 @@ A documentação detalhada não fica distribuída entre `tests` e `samples`; o �
 
 ## 🧪 Testes
 
-A suíte oficial para novas refatorações e correções comportamentais fica em `NewTests/` e usa DUnit com GUI Test Runner. As units de normalização de exceptions estão organizadas em `NewTests/src/Error/`, e a cobertura da validação/identificação de parâmetros SQL fica em `NewTests/src/Validation/`; o projeto e o runner permanecem na raiz de `NewTests/`. A árvore `tests/` permanece como suíte legada e material auxiliar; não é dependência estrutural de `NewTests/`.
+A suíte oficial para novas refatorações e correções comportamentais fica em `NewTests/` e usa DUnit com GUI Test Runner. As units de normalização de exceptions estão em `NewTests/src/Error/`, a validação/identificação de parâmetros SQL em `NewTests/src/Validation/`, a cobertura transacional em `NewTests/src/Transaction/` e a verificação do provider FireDAC em `NewTests/src/Infrastructure/`. A árvore `tests/` permanece como suíte legada e material auxiliar; não é dependência estrutural de `NewTests/`.
 
-A execução registrada da suíte atual no Delphi 12 Community Edition, alvo Windows 32-bit, executou **84 de 84 testes**, com **0 falhas** e **0 erros**. Desse total, 70 testes pertencem a `TRickSQLParameterValidatorTests`. A documentação das duas estruturas e os limites dessa evidência estão centralizados em [`docs/testes`](docs/testes/README.pt-BR.md).
+A execução mais recente informada antes desta alteração executou **108 testes**, com **107 aprovados**, **1 falha** e **0 erros**. A falha revelou a ausência da factory de `IFDGUIxWaitCursor`, motivando a seleção explícita de provider implementada agora. Por inspeção estática, a suíte atual registra **109 métodos DUnit `published`** após a inclusão do teste dedicado ao provider; a execução integral desta versão ainda não foi confirmada. Os detalhes e limites dessa evidência estão em [`docs/testes`](docs/testes/README.pt-BR.md).
 
 ## 📜 Licença
 

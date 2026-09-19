@@ -37,7 +37,7 @@ A aplicação consumidora não precisa importar `FireDAC.Phys.*` diretamente.
 
 As units auxiliares dos exemplos iniciam com `Rick.SQL`, mantendo o padrão nominal do framework. As referências diretas de interface visual ficam nos projetos que demonstram FMX ou serviço Windows.
 
-No núcleo, a unit de espera do FireDAC é selecionada por compilação condicional. O exemplo console configura `CONSOLE_CONNECTION` como *Conditional Define* do `.dproj` para usar `FireDAC.ConsoleUI.Wait`; sem esse símbolo, `Rick.SQL.Core.ClientLibrary.Resolver` referencia `FireDAC.FMXUI.Wait`.
+No núcleo, a unit de espera do FireDAC é selecionada por compilação condicional. Aplicações console usam automaticamente `FireDAC.ConsoleUI.Wait` por meio de `CONSOLE`; aplicações VCL definem `RICK_VCL_CONNECTION`; aplicações FMX definem `RICK_FMX_CONNECTION`. Não existe fallback visual arbitrário para hosts não-console.
 
 ## Exemplo de API fluente (`Interface`)
 
@@ -77,7 +77,7 @@ Demonstra:
 - tratamento de erro estruturado;
 - liberação do `TDataSet` retornado;
 - execução em thread externa;
-- uso de `CONSOLE_CONNECTION` como *Conditional Define* do projeto, fazendo o núcleo selecionar `FireDAC.ConsoleUI.Wait`.
+- seleção automática de `FireDAC.ConsoleUI.Wait` pelo símbolo `CONSOLE`, sem define específico do RickSQL.
 
 ## Exemplo de serviço Windows
 
@@ -110,6 +110,7 @@ Arquivos principais:
 Demonstra:
 
 - consumo do `RickSQL` em aplicação FMX;
+- `RICK_FMX_CONNECTION` configurado no projeto para registrar `FireDAC.FMXUI.Wait`;
 - execução em thread externa;
 - atualização de tela pela thread principal;
 - tratamento de erro estruturado;

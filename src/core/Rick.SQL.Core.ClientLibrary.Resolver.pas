@@ -9,11 +9,21 @@ uses
   // FireDAC
   FireDAC.DApt,
   FireDAC.Stan.Def,
-{$IFDEF CONSOLE_CONNECTION}
+
+{$IFDEF CONSOLE}
   FireDAC.ConsoleUI.Wait,
-{$ELSE}
+{$ELSEIF Defined(RICK_VCL_CONNECTION)}
+  FireDAC.VCLUI.Wait,
+{$ELSEIF Defined(RICK_FMX_CONNECTION)}
   FireDAC.FMXUI.Wait,
+{$ELSE}
+  {$MESSAGE FATAL 'Framework de UI não suportado para o provider'}
 {$ENDIF}
+
+{$IF Defined(RICK_VCL_CONNECTION) and Defined(RICK_FMX_CONNECTION)}
+  {$MESSAGE FATAL 'RICK_VCL_CONNECTION e RICK_FMX_CONNECTION são mutuamente exclusivos'}
+{$ENDIF}
+
   FireDAC.Stan.Async,
 
   // RTL

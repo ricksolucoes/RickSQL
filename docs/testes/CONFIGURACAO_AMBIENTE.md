@@ -16,7 +16,7 @@ RickSQL\src\services\drivers
 RickSQL\tests\integracao
 ```
 
-Because the projects are console applications and compile the core, configure `CONSOLE_CONNECTION` at project level whenever the flow includes `Rick.SQL.Core.ClientLibrary.Resolver`.
+Because the legacy projects in this section are console applications, `Rick.SQL.Core.ClientLibrary.Resolver` automatically selects `FireDAC.ConsoleUI.Wait` through `CONSOLE`; no RickSQL-specific define is required for this provider.
 
 ## SQLite
 
