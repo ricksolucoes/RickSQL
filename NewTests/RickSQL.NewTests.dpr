@@ -10,7 +10,8 @@ uses
   Rick.SQL.Tests.Parameter.Validator in 'src\Validation\Rick.SQL.Tests.Parameter.Validator.pas',
   Rick.SQL.Tests.Transaction in 'src\Transaction\Rick.SQL.Tests.Transaction.pas',
   Rick.SQL.Tests.ClientLibrary.VendorLibrary in 'src\ClientLibrary\Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas',
-  Rick.SQL.Tests.Driver.ProviderReuse in 'src\Driver\Rick.SQL.Tests.Driver.ProviderReuse.pas';
+  Rick.SQL.Tests.Driver.ProviderReuse in 'src\Driver\Rick.SQL.Tests.Driver.ProviderReuse.pas',
+  Rick.SQL.Tests.Fluent.Lifecycle in 'src\Facade\Rick.SQL.Tests.Fluent.Lifecycle.pas';
 
 begin
   Application.Initialize;

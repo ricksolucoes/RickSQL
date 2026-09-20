@@ -171,7 +171,7 @@ end;
 - `Add` finalizes a parameter using all six configured fields (`Name`, `Value`, `DataType`, `Size`, `Direction`, `IsNull`).
 - `AddNull` and `AddVariant` are shortcuts that mirror `TRickSQLParameter.CreateNull` and `TRickSQLParameter.Create` from the model, respectively. They therefore accept only the fields handled by those constructors (`Name` + `DataType`, and `Name` + `Value`); `Size` and `Direction` do not apply to those two shortcuts.
 - `Add`, `AddNull`, and `AddVariant` automatically reset the parameter-builder fields after finalizing the parameter (by calling `Default` internally), so the next `.Name(...)` starts from a neutral state.
-- `Clear` empties the list of parameters already added to the current command; it does not affect the parameter currently being built.
+- `Clear` empties the finalized parameter list stored in the fluent instance; it does not affect the parameter currently being built. Because that list belongs to the instance, clearing it changes which parameters `BuildCommand` copies into subsequent executions.
 - `Default` manually resets the fields of the parameter currently being built without affecting the already-finalized list.
 
 ### `IRickSQLCursor`
@@ -197,7 +197,7 @@ IRickSQLResult = interface
 end;
 ```
 
-`Error` returns the user-facing message (`TRickSQLError.Message`); `ErrorFull` returns the complete `TRickSQLExecutionResult`.
+`DataSet` returns the internal reference stored by the facade; it does not create a copy or change ownership by itself. `Error` returns the user-facing message (`TRickSQLError.Message`); `ErrorFull` returns the complete `TRickSQLExecutionResult`. Reference-validity rules for `DataSet` under `Owner(True)` and `Owner(False)` are documented in [Ownership and Lifetime](PROPRIEDADE_E_CICLO_DE_VIDA.md).
 
 ### Additional model dependency: `TRickSQLExecutionResult.Default`
 
@@ -244,7 +244,14 @@ end;
 
 ### Reusing the same instance
 
-`IRickSQL` can be reused for more than one operation, but consumers must pay attention to two points:
+`IRickSQL` can be reused for more than one operation. The unit of state is the whole instance returned by `TRickSQLInterf.New`, not an individual execution:
 
-- **Command parameters** (`FParameters`) and **additional connection parameters** (`FExtraParameters`) accumulate across `Open`/`Execute` calls on the same instance; neither collection is cleared automatically between commands. Use `.Parameter.Clear` and `.ConnectionOptions.ClearConnectionParameter` before building a new command or connection on the same instance whenever the previous parameters must not be reused.
-- The `TDataSet` returned by a previous `Open` call is released automatically at the beginning of the next `Open`/`Execute` call (and when the object is destroyed), unless `Owner(False)` was used. With `Owner(False)`, that automatic release does not occur and the consumer becomes solely responsible for releasing the dataset.
+- `SQL(...)` changes only the SQL text. Finalized parameters, the parameter under construction, command options, materialization options, connection options, and `Owner` remain configured.
+- **Command parameters** (`FParameters`) and **additional connection parameters** (`FExtraParameters`) accumulate across `Open`/`Execute` calls. Use `.Parameter.Clear` to clear only finalized command parameters and `.ConnectionOptions.ClearConnectionParameter` to clear only extra connection parameters.
+- `Add`, `AddNull`, and `AddVariant` call `Default` after finalizing a parameter. `Clear` does not call `Default`, so it does not erase `Name`, `Value`, `DataType`, `Size`, `Direction`, or `IsNull` values that are still under construction.
+- Command and materialization options persist until explicitly replaced or until the instance is destroyed.
+- `Open` and `Execute` reset the error/result state at the beginning of the operation, but they do not reset command state.
+- With the default `Owner(True)`, the previous dataset is released at the beginning of the next `Open`/`Execute` and when the instance is destroyed. With `Owner(False)`, the consumer takes responsibility for release; a new `Open` replaces the internal reference without freeing the previous dataset, while `Execute` preserves the reference to the last opened dataset.
+- To start a command with completely independent state, create another instance with `TRickSQLInterf.New`. There is no implicit full reset in `SQL(...)` and no public full-reset operation.
+
+The complete lifecycle matrix, including the validity of the reference returned by `DataSet` and the `Open -> Open`, `Open -> Execute`, `Execute -> Open`, and `Execute -> Execute` transitions, is documented in [Ownership and Lifetime](PROPRIEDADE_E_CICLO_DE_VIDA.md).

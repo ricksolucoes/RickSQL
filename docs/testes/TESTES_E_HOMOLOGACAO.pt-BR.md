@@ -48,9 +48,9 @@ A documentação detalhada da suíte legada está separada por finalidade:
 
 ## Nova suíte oficial
 
-O projeto `NewTests/RickSQL.NewTests.dpr` é o ponto de entrada DUnit com GUI Test Runner. As units registradas em `NewTests/src/Error/` cobrem a normalização compartilhada de `TRickSQLError` e a integração dos componentes alterados pela refatoração de exceptions. A unit `NewTests/src/Infrastructure/Rick.SQL.Tests.FireDAC.WaitProvider.pas` valida o provider VCL de `IFDGUIxWaitCursor` registrado pelo resolver. A unit `NewTests/src/Validation/Rick.SQL.Tests.Parameter.Validator.pas` cobre a identificação e a validação de parâmetros SQL sem depender de conexão ou banco externo. A unit `NewTests/src/Transaction/Rick.SQL.Tests.Transaction.pas` cobre estado transacional, `Start`, `Commit`, `Rollback`, `RollbackAfterFailure`, compatibilidade de `Active` e `UseTransaction=False` usando SQLite local. A unit `NewTests/src/ClientLibrary/Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas` cobre a autoridade canônica de aplicação de `VendorLib`, o caminho compatível `Configure`, o fluxo por `Driver.Context`/`Driver.Context.Factory`, path vazio, ausência da propriedade, falha de setter, equivalência observável e preservação de default de provider. A unit `NewTests/src/Driver/Rick.SQL.Tests.Driver.ProviderReuse.pas` cobre consistência entre provider/definition, overloads de compatibilidade, propagação do provider resolvido durante a validação, reutilização pelo `ClientLibraryResolver` e pela `Driver.Context.Factory`, isolamento entre operações e os caminhos `Execute`/`Open` com SQLite.
+O projeto `NewTests/RickSQL.NewTests.dpr` é o ponto de entrada DUnit com GUI Test Runner. As units registradas em `NewTests/src/Error/` cobrem a normalização compartilhada de `TRickSQLError` e a integração dos componentes alterados pela refatoração de exceptions. A unit `NewTests/src/Infrastructure/Rick.SQL.Tests.FireDAC.WaitProvider.pas` valida o provider VCL de `IFDGUIxWaitCursor` registrado pelo resolver. A unit `NewTests/src/Validation/Rick.SQL.Tests.Parameter.Validator.pas` cobre a identificação e a validação de parâmetros SQL sem depender de conexão ou banco externo. A unit `NewTests/src/Transaction/Rick.SQL.Tests.Transaction.pas` cobre estado transacional, `Start`, `Commit`, `Rollback`, `RollbackAfterFailure`, compatibilidade de `Active` e `UseTransaction=False` usando SQLite local. A unit `NewTests/src/ClientLibrary/Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas` cobre a autoridade canônica de aplicação de `VendorLib`, o caminho compatível `Configure`, o fluxo por `Driver.Context`/`Driver.Context.Factory`, path vazio, ausência da propriedade, falha de setter, equivalência observável e preservação de default de provider. A unit `NewTests/src/Driver/Rick.SQL.Tests.Driver.ProviderReuse.pas` cobre consistência entre provider/definition, overloads de compatibilidade, propagação do provider resolvido durante a validação, reutilização pelo `ClientLibraryResolver` e pela `Driver.Context.Factory`, isolamento entre operações e os caminhos `Execute`/`Open` com SQLite. A unit `NewTests/src/Facade/Rick.SQL.Tests.Fluent.Lifecycle.pas` caracteriza o lifecycle stateful da API fluent, persistência de parâmetros/opções, semântica de `Clear`, reset de erro, transições sucessivas e ownership do dataset com `Owner(True)`/`Owner(False)`, usando SQLite `:memory:` e `FreeNotification` para observar liberações sem acessar memória já destruída.
 
-A suíte atual registra sete classes de teste:
+A suíte fonte atual registra oito classes de teste:
 
 - `TRickSQLErrorNormalizerTests` — 6 testes para exception genérica, sanitização, contrato do parser, metadata FireDAC determinística e preservação do código realmente fornecido pelo SQLite/FireDAC;
 - `TRickSQLErrorIntegrationTests` — 8 testes de integração cobrindo Driver Context, Connection, Query, Session, Parameter Binder, Transaction, DataSet Materializer e Client Library Resolver;
@@ -59,10 +59,27 @@ A suíte atual registra sete classes de teste:
 - `TRickSQLTransactionTests` — 24 testes DUnit cobrindo estado ativo/inativo, falha determinística de inspeção de `InTransaction`, `Start`, `Commit`, `Rollback`, preservação do erro primário em `RollbackAfterFailure`, contrato compatível de `Active` e execução com `UseTransaction=False`.
 - `TRickSQLVendorLibraryTests` — 15 testes DUnit cobrindo aplicação canônica de `VendorLib`, path vazio, DriverLink sem `VendorLib`, falha de setter, `ClientLibraryResolver.Configure`, `Driver.Context`, `Driver.Context.Factory`, preservação das classificações `ClientLibrary` e `Driver`, equivalência entre os caminhos e default do provider InterBase;
 - `TRickSQLDriverProviderReuseTests` — 11 testes DUnit cobrindo correspondência entre provider/definition, overloads de compatibilidade, reutilização do provider devolvido pela validação, resolução da client library e criação do Driver Context com provider já disponível, isolamento entre operações independentes e os caminhos `Execute`/`Open` com SQLite.
+- `TRickSQLFluentLifecycleTests` — 17 testes DUnit de caracterização cobrindo estado inicial, persistência de parâmetros e opções, semântica de `Clear`, reset de erro, `Open -> Open`, `Open -> Execute`, `Execute -> Execute`, `Execute -> Open`, destrutor, `Owner(True)`, `Owner(False)` e independência entre instâncias.
 
-### Execução real registrada — 19/09/2026
+### Execução real atual registrada — 19/09/2026
 
-A versão atual da suíte oficial foi executada com **DUnit + GUI Test Runner**. A evidência fornecida registra **Delphi 12 Community Edition** e alvo **Windows 32-bit** para `RickSQL.NewTests.dproj`. O runner exibiu:
+Após o ajuste do teste de destrutor do lifecycle fluent, a captura fornecida do **DUnit + GUI Test Runner** mostra `RickSQL.NewTests.exe` executando a suíte fonte atual completa:
+
+```text
+Tests:      152
+Run:        152
+Failures:     0
+Errors:       0
+Overrides:    0
+```
+
+Os 152 testes executados correspondem aos 152 testes registrados pela fonte atual em oito classes, incluindo os 17 testes de `TRickSQLFluentLifecycleTests`. Esta passa a ser, portanto, a execução real mais recente registrada da suíte `NewTests/` atual. A captura comprova a execução dos testes; por si só, ela **não** identifica edição da IDE, plataforma alvo, configuração de build, Win64, Release ou `FULL_EDITION`, portanto nenhuma nova afirmação de build é inferida a partir dela.
+
+Uma execução intermediária da mesma suíte de 152 testes apresentou uma falha em `Destructor_OwnerTrue_DeveLiberarDataSet`. O teste foi então ajustado para que a façade fluent e suas referências temporárias de interface saíssem de um escopo separado antes da verificação da liberação do dataset. A execução subsequente fornecida é o resultado 152/152 acima, sem necessidade de alteração de código de produção ou API pública nesse ajuste.
+
+### Execução real histórica registrada — 19/09/2026 — anterior à classe de lifecycle
+
+A revisão anterior da suíte oficial, existente antes da inclusão de `TRickSQLFluentLifecycleTests`, foi executada com **DUnit + GUI Test Runner**. A evidência fornecida para aquela revisão registra **Delphi 12 Community Edition** e alvo **Windows 32-bit** para `RickSQL.NewTests.dproj`. O runner exibiu:
 
 ```text
 Tests:      135
@@ -73,13 +90,11 @@ Overrides:    0
 Score:      100%
 ```
 
-A árvore do runner mostra `TRickSQLDriverProviderReuseTests` registrada junto às demais classes e todos os testes exibidos estão aprovados. O total de 135 coincide com os métodos `published` do código atual: 6 de `TRickSQLErrorNormalizerTests`, 8 de `TRickSQLErrorIntegrationTests`, 1 de `TRickSQLFireDACWaitProviderTests`, 70 de `TRickSQLParameterValidatorTests`, 24 de `TRickSQLTransactionTests`, 15 de `TRickSQLVendorLibraryTests` e 11 de `TRickSQLDriverProviderReuseTests`.
+O total de 135 coincidia com os métodos `published` daquela revisão histórica: 6 de `TRickSQLErrorNormalizerTests`, 8 de `TRickSQLErrorIntegrationTests`, 1 de `TRickSQLFireDACWaitProviderTests`, 70 de `TRickSQLParameterValidatorTests`, 24 de `TRickSQLTransactionTests`, 15 de `TRickSQLVendorLibraryTests` e 11 de `TRickSQLDriverProviderReuseTests`. Esse resultado permanece somente como homologação histórica; a execução da suíte atual é a rodada 152/152 documentada acima.
 
-Essa execução valida a suíte oficial `NewTests/`; ela não constitui execução da árvore legada `tests/`, nem comprova Win64, Release ou `FULL_EDITION`.
+### Evidência histórica de build registrada — 19/09/2026 — `RickSQL.NewTests.dproj`
 
-### Evidência atual de build registrada — 19/09/2026 — `RickSQL.NewTests.dproj`
-
-A captura fornecida do Delphi 12 Community Edition mostra `RickSQL.NewTests.dproj` como **[Built]**, com o alvo selecionado **Windows 32-bit**. Essa é a evidência atual de build associada à rodada de homologação com 135 testes. Ela não deve ser extrapolada como evidência de Win64, Release, `FULL_EDITION` ou de outro projeto.
+A captura fornecida do Delphi 12 Community Edition mostra `RickSQL.NewTests.dproj` como **[Built]**, com o alvo selecionado **Windows 32-bit**. Essa é a evidência histórica de build associada à rodada de homologação com 135 testes e antecede a inclusão dos testes de lifecycle. Ela não deve ser extrapolada como evidência de Win64, Release, `FULL_EDITION` ou de outro projeto.
 
 ### Build histórico registrado — `RickConnection.dproj`
 
@@ -96,7 +111,7 @@ Esse resultado é mantido como evidência histórica para a configuração mostr
 
 Em **18/09/2026**, uma versão anterior da suíte, ainda sem `TRickSQLTransactionTests`, executou 84 testes com 0 falhas e 0 erros. Depois, durante a correção transacional, houve uma execução de 108 testes com 107 aprovados, 1 falha e 0 erros; a falha em `UseTransactionFalse_NaoDeveIntroduzirErroTransacional` revelou a ausência da factory de `IFDGUIxWaitCursor`. A seleção explícita do provider Console/VCL/FMX e `TRickSQLFireDACWaitProviderTests` foram adicionadas em seguida. Uma rodada intermediária posterior, antes da inclusão de `TRickSQLDriverProviderReuseTests`, executou **124/124** testes sem falhas ou erros.
 
-Esses resultados permanecem apenas como histórico. O estado homologado mais recente documentado é a execução de **135/135**, sem falhas ou erros, em 19/09/2026. A medição real mais recente de Method Toxicity do `RickSQL.NewTests.dproj`, também em 19/09/2026, está registrada em [Controle de toxicidade](../engenharia/CONTROLE_DE_TOXICIDADE.pt-BR.md).
+Esses resultados anteriores permanecem apenas como histórico. A execução real mais recente documentada é a rodada da suíte atual **152/152**, com 0 falhas, 0 erros e 0 overrides, em 19/09/2026. As medições reais atuais de Method Toxicity para `src` e `NewTests`, também fornecidas em 19/09/2026, estão registradas em [Controle de toxicidade](../engenharia/CONTROLE_DE_TOXICIDADE.pt-BR.md).
 
 ## Ordem de homologação
 

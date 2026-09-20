@@ -172,7 +172,7 @@ end;
 - `Add` consolida um parâmetro usando todos os seis campos configurados (`Name`, `Value`, `DataType`, `Size`, `Direction`, `IsNull`).
 - `AddNull` e `AddVariant` são atalhos que espelham, respectivamente, `TRickSQLParameter.CreateNull` e `TRickSQLParameter.Create` do model — por isso aceitam apenas os campos que esses dois construtores recebem (`Name`+`DataType` e `Name`+`Value`); `Size` e `Direction` não se aplicam a esses dois atalhos.
 - `Add`, `AddNull` e `AddVariant` reiniciam automaticamente os campos de construção do parâmetro após consolidar (chamando `Default` internamente), para que o próximo `.Name(...)` comece de um estado neutro.
-- `Clear` esvazia a lista de parâmetros já adicionados ao comando corrente — não afeta o parâmetro em construção.
+- `Clear` esvazia a lista de parâmetros já consolidada na instância fluent — não afeta o parâmetro em construção. Como essa lista pertence à instância, a limpeza afeta os parâmetros que `BuildCommand` copiaria para as próximas execuções.
 - `Default` reinicia manualmente os campos do parâmetro em construção, sem afetar a lista já consolidada.
 
 ### `IRickSQLCursor`
@@ -198,7 +198,7 @@ IRickSQLResult = interface
 end;
 ```
 
-`Error` devolve a mensagem amigável (`TRickSQLError.Message`); `ErrorFull` devolve o `TRickSQLExecutionResult` completo.
+`DataSet` devolve a referência interna armazenada pela façade; não cria cópia nem muda ownership por si só. `Error` devolve a mensagem amigável (`TRickSQLError.Message`); `ErrorFull` devolve o `TRickSQLExecutionResult` completo. As regras de validade da referência de `DataSet` para `Owner(True)` e `Owner(False)` estão em [Propriedade e ciclo de vida](PROPRIEDADE_E_CICLO_DE_VIDA.pt-BR.md).
 
 ### Dependência adicional no model: `TRickSQLExecutionResult.Default`
 
@@ -245,7 +245,14 @@ end;
 
 ### Reaproveitando a mesma instância
 
-`IRickSQL` pode ser reutilizada para mais de uma operação, mas dois pontos exigem atenção do consumidor:
+`IRickSQL` pode ser reutilizada para mais de uma operação. A unidade de estado é a instância inteira retornada por `TRickSQLInterf.New`, não uma execução individual:
 
-- **Parâmetros do comando** (`FParameters`) e **parâmetros adicionais de conexão** (`FExtraParameters`) acumulam entre chamadas de `Open`/`Execute` na mesma instância — nada é limpo automaticamente entre um comando e outro. Use `.Parameter.Clear` e `.ConnectionOptions.ClearConnectionParameter` antes de montar um novo comando ou uma nova conexão na mesma instância, quando os parâmetros anteriores não devem ser reaproveitados.
-- O `TDataSet` retornado por uma chamada anterior de `Open` é liberado automaticamente no início da chamada seguinte de `Open`/`Execute` (e na destruição do objeto), desde que `Owner(False)` não tenha sido usado. Quando `Owner(False)` é usado, essa liberação automática não ocorre, e o consumidor passa a ser o único responsável por liberar o dataset.
+- `SQL(...)` altera somente o texto SQL. Parâmetros consolidados, parâmetro em construção, opções de comando, opções de materialização, opções de conexão e `Owner` permanecem configurados.
+- **Parâmetros do comando** (`FParameters`) e **parâmetros adicionais de conexão** (`FExtraParameters`) acumulam entre chamadas de `Open`/`Execute`. Use `.Parameter.Clear` para limpar somente os parâmetros consolidados e `.ConnectionOptions.ClearConnectionParameter` para limpar somente os parâmetros extras de conexão.
+- `Add`, `AddNull` e `AddVariant` chamam `Default` depois de consolidar o parâmetro. `Clear` não chama `Default`; portanto, não apaga `Name`, `Value`, `DataType`, `Size`, `Direction` ou `IsNull` que ainda estejam em construção.
+- Opções de comando e de materialização persistem até serem explicitamente substituídas ou até a instância ser destruída.
+- `Open` e `Execute` reiniciam o estado de erro/resultado no início da operação, mas não reiniciam o estado de comando.
+- Com o padrão `Owner(True)`, o dataset anterior é liberado no início do próximo `Open`/`Execute` e na destruição da instância. Com `Owner(False)`, o consumidor assume a liberação; um novo `Open` substitui a referência interna sem liberar a anterior, enquanto `Execute` preserva a referência ao último dataset aberto.
+- Para iniciar um comando com estado totalmente independente, crie outra instância com `TRickSQLInterf.New`. Não existe reset total implícito em `SQL(...)` nem uma operação pública de reset total.
+
+A matriz completa de lifecycle, incluindo a validade da referência retornada por `DataSet` e as transições `Open -> Open`, `Open -> Execute`, `Execute -> Open` e `Execute -> Execute`, está em [Propriedade e ciclo de vida](PROPRIEDADE_E_CICLO_DE_VIDA.pt-BR.md).

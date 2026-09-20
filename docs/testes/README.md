@@ -23,6 +23,8 @@ NewTests/
     │   └── Rick.SQL.Tests.Error.Normalizer.pas
     ├── Infrastructure/
     │   └── Rick.SQL.Tests.FireDAC.WaitProvider.pas
+    ├── Facade/
+    │   └── Rick.SQL.Tests.Fluent.Lifecycle.pas
     ├── Transaction/
     │   └── Rick.SQL.Tests.Transaction.pas
     └── Validation/
@@ -31,7 +33,7 @@ NewTests/
 
 The `RickSQL.NewTests` project consumes the production implementation under `../src` and does not structurally depend on `tests/`.
 
-The current suite registers **135 DUnit tests across seven classes**, including `TRickSQLVendorLibraryTests` under `NewTests/src/ClientLibrary/` and `TRickSQLDriverProviderReuseTests` under `NewTests/src/Driver/`. On **2026-09-19**, the supplied evidence for `RickSQL.NewTests.dproj` on **Windows 32-bit** shows the project as **[Built]** in Delphi 12 Community Edition, and the DUnit GUI Test Runner executed **135/135**, with **0 failures**, **0 errors**, **0 overrides**, and **Score 100%**. A previously recorded `RickConnection.dproj` **Debug/Win32: Success** build is retained separately as historical evidence and was not revalidated in the current provider-reuse round. Details and evidence boundaries are documented in [Tests and validation](TESTES_E_HOMOLOGACAO.md).
+The current source suite registers **152 DUnit tests across eight classes**, including `TRickSQLFluentLifecycleTests` under `NewTests/src/Facade/`. The latest supplied DUnit GUI Test Runner evidence, dated **2026-09-19**, executed **152/152**, with **0 failures**, **0 errors**, and **0 overrides**, matching the current source count. The previous **135/135** Delphi 12 Community Edition/Windows 32-bit build-and-run evidence is retained as historical validation and is not used as proof of the current build configuration. Details and evidence boundaries are documented in [Tests and validation](TESTES_E_HOMOLOGACAO.md).
 
 Detailed documentation for the legacy suite remains separated by purpose:
 

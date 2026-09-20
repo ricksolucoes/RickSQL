@@ -77,6 +77,8 @@
         <DCC_UnitSearchPath>..\src;..\src\core;..\src\error;..\src\model;..\src\services;..\src\services\drivers;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>1046</VerInfo_Locale>
         <SanitizedProjectName>RickSQL_NewTests</SanitizedProjectName>
+        <DCC_ExeOutput>.\..\$(Platform)\$(Config)</DCC_ExeOutput>
+        <DCC_DcuOutput>.\..\$(Platform)\$(Config)\Temp</DCC_DcuOutput>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
@@ -125,6 +127,7 @@
         <DCCReference Include="src\Transaction\Rick.SQL.Tests.Transaction.pas"/>
         <DCCReference Include="src\ClientLibrary\Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas"/>
         <DCCReference Include="src\Driver\Rick.SQL.Tests.Driver.ProviderReuse.pas"/>
+        <DCCReference Include="src\Facade\Rick.SQL.Tests.Fluent.Lifecycle.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

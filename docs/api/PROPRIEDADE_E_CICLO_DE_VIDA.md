@@ -11,9 +11,9 @@ After `Open` returns:
 - the internal FireDAC session (query, connection, and driver context) has already been released in the executor's `finally` block before the method returns;
 - the returned `TFDMemTable` remains active and usable because its data has already been copied into memory and no longer depends on the original connection.
 
-## Release responsibility
+## Release responsibility — `TRickSQL` facade
 
-The caller owns the returned dataset and must release it explicitly:
+With the `TRickSQL` facade, the caller owns the returned dataset and must release it explicitly:
 
 ```pascal
 LDataSet := TRickSQL.Open(LCommand, LError);
@@ -25,6 +25,68 @@ end;
 ```
 
 Do not release the dataset before you finish consuming its data. `LDataSet.Free` is safe even when `LDataSet` is `nil` (the standard Delphi semantics of `TObject.Free`).
+
+
+## Fluent API lifecycle — `TRickSQLInterf`
+
+`TRickSQLInterf.New` creates one stateful instance that implements all `IRickSQL*` interfaces. Navigation methods (`Command`, `Parameter`, `Option`, `Materialization`, `Back`, `Return`, `ToBack`, `Cursor`, and `Result`) return interfaces to that same instance; they do not create a new command state.
+
+The state below belongs to the instance and remains there until it is explicitly replaced/cleared or the facade is destroyed:
+
+| State | Initialization | Changed by | After `Execute` | After `Open` | Cleared by `SQL(...)`? | Cleared by `Parameter.Clear`? | End of lifetime |
+|---|---|---|---|---|---|---|---|
+| SQL | empty string from the zero-initialized instance | `SQL(...)` | persists | persists | replaces only the SQL itself | no | instance destruction |
+| finalized parameters | empty array | `Add`, `AddNull`, `AddVariant`, `Clear` | persist | persist | no | **yes** | instance destruction or `Clear` |
+| parameter under construction | `Name=''`, `Value=Null`, `DataType=ftUnknown`, `Size=0`, `Direction=ptInput`, `IsNull=False` | `Name`, `Value`, `DataType`, `Size`, `Direction`, `IsNull`, `Default` | persists if not finalized | persists if not finalized | no | **no** | `Default`, `Add*` (which calls `Default`), or destruction |
+| command options | `TimeOut=0`, `Transation=True`, `FetchAll=True`, `MaxRedord=0` | `IRickSQLCommandOptions` setters | persist | persist | no | no | instance destruction |
+| materialization options | `Position=True`, `Preserve=True` | `IRickSQLMaterializationOptions` setters | persist | persist | no | no | instance destruction |
+| connection options | empty/zero fields; engine initially `Unknown`; no extra parameters | `IRickSQLConnectionOptions` | persist | persist | no | no; `ClearConnectionParameter` clears extras only | instance destruction |
+| error/result | neutral state (`Error=''`, `Success=False`, `RowsAffected=0`, empty structured error) | `Open`/`Execute` | replaced by execution result | replaced by open result | no | no | reset at the beginning of the next operation and during destruction |
+| internal dataset | `nil` | `Open` | see ownership rules below | replaced by the new `Open` result | no | no | depends on `Owner` |
+| `Owner` | `True` | `Owner(Boolean)` | persists | persists | no | no | instance destruction |
+
+### `SQL(...)` does not start a clean command
+
+`SQL(const ASQL: string)` changes only `FSQL`. It does not clear finalized parameters, the parameter under construction, command options, materialization options, connection options, `Owner`, or the previous result. The previous result is reset only when `Open` or `Execute` starts.
+
+To reuse existing configuration, change only the required state. To remove finalized parameters, use `.Command.Parameter.Clear`. For a completely independent command, `TRickSQLInterf.New` is the existing mechanism that creates clean state; its constructor only initializes fields/defaults and does not open a connection or create a dataset. There is no public full-reset operation.
+
+### `DataSet` returns the internal reference
+
+`IRickSQLResult.DataSet` only returns `FDataSet`. It does not clone the dataset, materialize it again, or change ownership. The reference lifetime therefore depends on `Owner` and on subsequent operations performed on the same instance.
+
+### `Owner(True)` — default
+
+With `Owner(True)`, the fluent instance is responsible for releasing the dataset currently stored in `FDataSet`:
+
+- at the beginning of any subsequent `Open` or `Execute`, `ErrorDefault` calls `FreeAndNil(FDataSet)` when a dataset exists;
+- the destructor also calls `ErrorDefault`, so it releases the dataset still stored by the facade;
+- while `Owner(True)` remains active, a reference returned by `Result.DataSet` is valid until the next `Open`/`Execute` or instance destruction, because either event releases the stored dataset;
+- changing to `Owner(False)` does not invalidate that reference; it transfers the responsibility for the eventual `Free` to the consumer;
+- the consumer must not call `Free` on that reference while the instance remains under `Owner(True)`, because the facade still intends to release it.
+
+### `Owner(False)` — consumer responsibility
+
+With `Owner(False)`, `ErrorDefault` does not release `FDataSet`. The consumer owns every dataset returned by `Open`:
+
+- a new `Open` replaces `FDataSet` with the new reference; the previous dataset remains alive but is no longer tracked by the facade, so the consumer must have kept its own reference in order to release it;
+- `Execute` does not assign `FDataSet`; therefore, after `Open -> Execute`, `Result.DataSet` still returns the last opened dataset while `Owner(False)` remains active;
+- destroying the facade does not release the dataset still stored in `FDataSet`;
+- the consumer must call `Free` exactly once for every dataset whose ownership it accepted; that reference remains valid until this `Free`, even if a newer `Open` has already removed the previous dataset from facade tracking.
+
+`Owner(Boolean)` changes an instance flag, not a `TComponent.Owner` property. If the value changes after an `Open`, the policy used by the next cleanup/destruction is the current flag value. Datasets that were already displaced by a newer `Open` while `Owner(False)` was active are not tracked again by the facade.
+
+While `Owner(False)` is active, the facade still keeps the last `Open` reference in `FDataSet`; it only stops being responsible for calling `Free`. If the consumer frees that dataset before the internal reference is replaced, `Result.DataSet` then points to an already released object. In that state, do not switch to `Owner(True)` before a new `Open` replaces the reference, because the next cleanup would attempt to release the still-stored pointer again. The safe pattern is to keep the external reference and release the dataset after the facade stops tracking it or after the facade itself has been released, as characterized by the tests.
+
+### Successive transitions with default ownership
+
+With `Owner(True)`:
+
+- `Open -> Open`: the first dataset is released before the second open; `DataSet` then points to the new result;
+- `Open -> Execute`: the opened dataset is released before execution; because `Execute` does not create a dataset, `DataSet` becomes `nil`;
+- `Execute -> Open`: `Execute` creates no dataset; the following `Open` stores the newly returned dataset;
+- `Execute -> Execute`: neither execution creates a dataset; `DataSet` remains `nil`;
+- parameters, connection options, command options, materialization options, SQL, and `Owner` are not reset by those transitions.
 
 ## Empty query
 

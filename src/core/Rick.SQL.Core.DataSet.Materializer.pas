@@ -32,6 +32,10 @@ type
     class function ValidateSetup(
       const ASetup: TRickSQLDataSetMaterializationSetup;
       out AError: TRickSQLError): Boolean; static;
+    class function CreateEmptyMemoryDataSet(const ASource: TDataSet): TFDMemTable;
+    class procedure CopyFieldMetadata(const ASource: TDataSet;
+      const ATarget: TFDMemTable; const AOptions: TRickSQLCommandOptions);
+    class procedure CopyFieldProperties(const ASourceField, ATargetField: TField);
     class function CreateMemoryDataSet(const ASource: TDataSet;
       const AOptions: TRickSQLCommandOptions): TFDMemTable; static;
     class procedure PrepareWritableFields(
@@ -140,36 +144,55 @@ begin
     AError := CreateDataSetError(_ERROR_QUERY_WITHOUT_FIELDS_, '');
 end;
 
+class function TRickSQLCoreDataSetMaterializer.CreateEmptyMemoryDataSet(
+  const ASource: TDataSet): TFDMemTable;
+begin
+  Result := TFDMemTable.Create(nil);
+  ASource.FieldDefs.Update;
+  Result.FieldDefs.Assign(ASource.FieldDefs);
+  Result.CreateDataSet;
+end;
+
+class procedure TRickSQLCoreDataSetMaterializer.CopyFieldMetadata(
+  const ASource: TDataSet; const ATarget: TFDMemTable;
+  const AOptions: TRickSQLCommandOptions);
+var
+  LIndex: Integer;
+begin
+  if not AOptions.Materialization.PreserveFieldMetadata then
+    Exit;
+
+  if ATarget.FieldCount <> ASource.FieldCount then
+    Exit;
+
+  for LIndex := 0 to ASource.FieldCount - 1 do
+    CopyFieldProperties(ASource.Fields[LIndex], ATarget.Fields[LIndex]);
+end;
+
+class procedure TRickSQLCoreDataSetMaterializer.CopyFieldProperties(
+  const ASourceField, ATargetField: TField);
+begin
+  ATargetField.Alignment    := ASourceField.Alignment;
+  ATargetField.DisplayLabel := ASourceField.DisplayLabel;
+  ATargetField.DisplayWidth := ASourceField.DisplayWidth;
+  ATargetField.Visible      := ASourceField.Visible;
+  ATargetField.EditMask     := ASourceField.EditMask;
+  ATargetField.Required     := ASourceField.Required;
+
+  if ASourceField is TNumericField then
+    TNumericField(ATargetField).DisplayFormat := TNumericField(ASourceField).DisplayFormat;
+end;
+
 class function TRickSQLCoreDataSetMaterializer.CreateMemoryDataSet(
   const ASource: TDataSet; const AOptions: TRickSQLCommandOptions): TFDMemTable;
 var
   LReady: Boolean;
-  LIndex: Integer;
 begin
-  Result := TFDMemTable.Create(nil);
+  Result := CreateEmptyMemoryDataSet(ASource);
   LReady := False;
   try
-    ASource.FieldDefs.Update;
-    Result.FieldDefs.Assign(ASource.FieldDefs);
-    Result.CreateDataSet;
-
     // A lógica executa isolada aqui, mantendo o método Materialize limpo
-    if AOptions.Materialization.PreserveFieldMetadata and (Result.FieldCount = ASource.FieldCount) then
-    begin
-      for LIndex := 0 to ASource.FieldCount - 1 do
-      begin
-        Result.Fields[LIndex].Alignment    := ASource.Fields[LIndex].Alignment;
-        Result.Fields[LIndex].DisplayLabel := ASource.Fields[LIndex].DisplayLabel;
-        Result.Fields[LIndex].DisplayWidth := ASource.Fields[LIndex].DisplayWidth;
-        Result.Fields[LIndex].Visible      := ASource.Fields[LIndex].Visible;
-        Result.Fields[LIndex].EditMask     := ASource.Fields[LIndex].EditMask;
-        Result.Fields[LIndex].Required     := ASource.Fields[LIndex].Required;
-
-        if ASource.Fields[LIndex] is TNumericField then
-          TNumericField(Result.Fields[LIndex]).DisplayFormat := TNumericField(ASource.Fields[LIndex]).DisplayFormat;
-      end;
-    end;
-
+    CopyFieldMetadata(ASource, Result, AOptions);
     PrepareWritableFields(Result);
     LReady := True;
   finally

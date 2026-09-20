@@ -86,28 +86,29 @@ Without that execution:
 
 The minimum rule for any Delphi change is to avoid introducing new toxicity and to avoid worsening pre-existing toxicity outside the authorized scope.
 
-### Current recorded real measurement — 2026-09-19 — `RickSQL.NewTests.dproj`
+### Current recorded real measurements — 2026-09-19
 
-On **2026-09-19**, RAD Studio **Delphi 12 Community Edition** ran `Project > Method Toxicity Metrics` for `RickSQL.NewTests.dproj`, targeting **Windows 32-bit**. The supplied capture shows the grid sorted by `Toxicity` in descending order and includes methods from both `TRickSQLVendorLibraryTests` and `TRickSQLDriverProviderReuseTests`.
+On **2026-09-19**, two CSV exports from RAD Studio **Method Toxicity Metrics** were supplied and analyzed: `Framework.csv`, whose measured methods are under production `src`, and `Teste-New.csv`, whose measured methods are under `NewTests`. Because the CSV files themselves do not encode IDE edition, target platform, build configuration, or conditional defines, those environment properties are not inferred from the current measurement.
 
-| Evidence visible in the capture | Value |
-|---|---:|
-| highest displayed `Toxicity` | 0.350 |
-| highest visible `Length` | 14 |
-| highest visible `Parameters` | 4 |
-| highest visible `If Depth` | 1 |
-| highest visible `Cyclomatic Complexity` | 3 |
-| official `Toxicity` threshold | 1 |
+| Measured scope | Max `Length` | Max `Parameters` | Max `If Depth` | Max `Cyclomatic Complexity` | Max `Toxicity` |
+|---|---:|---:|---:|---:|---:|
+| production `src` (`Framework.csv`) | 19 | 5 | 4 | 6 | 0.588 |
+| `NewTests` (`Teste-New.csv`) | 18 | 4 | 1 | 3 | 0.350 |
+| `Rick.SQL.Tests.Fluent.Lifecycle.pas` subset | 18 | 2 | 1 | 2 | 0.279 |
 
-Because the grid is sorted by `Toxicity` and the first displayed value is `0.350`, **no violation of the official Toxicity threshold was observed in the measured test project**. This does not mean `Toxicity = 0`; it means the values shown by the tool are below the official threshold.
+Against the project's baseline thresholds (`Length = 20`, `Parameters = 6`, `If Depth = 5`, `Cyclomatic Complexity = 6`, and `Toxicity = 1`), no measured method represented in the supplied CSV exports exceeds a threshold. Production `Cyclomatic Complexity` reaches the baseline limit of 6 but does not exceed it. The maximum production `Toxicity` is `0.588`, while the maximum for `NewTests` is `0.350`.
 
-The presence of `TRickSQLDriverProviderReuseTests` methods in the grid demonstrates that the measurement corresponds to `RickSQL.NewTests.dproj` after provider/definition reuse coverage was added. In the same documented validation round, the official suite ran 135 tests, with 135 executed, 0 failures, 0 errors, and 0 overrides; execution details are recorded in [Tests and validation](../testes/TESTES_E_HOMOLOGACAO.md).
+`Teste-New.csv` includes **25 measured methods** from `NewTests/src/Facade/Rick.SQL.Tests.Fluent.Lifecycle.pas`, including the lifecycle test helpers and its 17 published tests. In that unit, the highest measured `Toxicity` is `0.279` (`TDataSetReleaseProbe.Notification`), and the highest measured `Length` is 18 (`OpenOpen_OwnerFalse_DevePreservarDataSetAnterior`). The two scope-isolation helpers added by the destructor-test adjustment, `OpenOwnedDataSetAndReleaseFacade` and `OpenExternalDataSetAndReleaseFacade`, measure `Toxicity` at `0.133` and `0.146`, respectively; both have one parameter, `If Depth = 0`, and `Cyclomatic Complexity = 1`. This is real CSV-based Method Toxicity evidence for the lifecycle unit after the adjustment; it replaces the previous limitation that only static analysis was available for those tests.
 
-This measurement is specific to `RickSQL.NewTests.dproj` and the **Windows 32-bit** configuration shown. It must not be extrapolated as a real measurement of the legacy `tests/` suite, Win64, Release, `FULL_EDITION`, or projects that were not submitted to the tool.
+The current DUnit execution associated with the updated source is documented separately in [Tests and validation](../testes/TESTES_E_HOMOLOGACAO.md): 152 tests executed, with 0 failures, 0 errors, and 0 overrides. Test execution evidence and Method Toxicity evidence remain distinct: neither is used to infer a build configuration that its artifact does not show.
+
+### Historical recorded measurement — 2026-09-19 — before the lifecycle class
+
+The previously documented `RickSQL.NewTests.dproj` measurement, captured in **Delphi 12 Community Edition** for **Windows 32-bit**, showed a highest visible `Toxicity` of `0.350`, with visible `Length` up to 14, `Parameters` up to 4, `If Depth` up to 1, and `Cyclomatic Complexity` up to 3. That snapshot predated `TRickSQLFluentLifecycleTests`. It remains useful as historical evidence, but the current `Teste-New.csv` measurement above now independently covers the lifecycle unit while retaining the same global maximum `Toxicity` of `0.350`.
 
 ### Historical recorded measurement — 2026-09-18
 
-The previous measurement of the same project, also on **Delphi 12 Community Edition** and **Windows 32-bit**, was recorded before the transaction, FireDAC infrastructure, and `VendorLib` consolidation units were added. In that capture, the highest displayed `Toxicity` was `0.325`, with visible `Length` up to `14`, `Parameters` up to `4`, `If Depth` up to `1`, and `Cyclomatic Complexity` up to `3`. This record is kept only as project-evolution history; the 2026-09-19 measurement is the latest real measurement documented here.
+The previous measurement of the same project, also on **Delphi 12 Community Edition** and **Windows 32-bit**, was recorded before the transaction, FireDAC infrastructure, and `VendorLib` consolidation units were added. In that capture, the highest displayed `Toxicity` was `0.325`, with visible `Length` up to `14`, `Parameters` up to `4`, `If Depth` up to `1`, and `Cyclomatic Complexity` up to `3`. This record is kept only as project-evolution history; the current CSV-based measurements documented above are the latest real measurements recorded here.
 
 ## Dead code
 
