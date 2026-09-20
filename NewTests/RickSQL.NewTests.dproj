@@ -124,6 +124,7 @@
         <DCCReference Include="src\Validation\Rick.SQL.Tests.Parameter.Validator.pas"/>
         <DCCReference Include="src\Transaction\Rick.SQL.Tests.Transaction.pas"/>
         <DCCReference Include="src\ClientLibrary\Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas"/>
+        <DCCReference Include="src\Driver\Rick.SQL.Tests.Driver.ProviderReuse.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

@@ -8,6 +8,7 @@ interface
 uses
   // RickSQL
   Rick.SQL.Model.Command,
+  Rick.SQL.Model.Contracts,
   Rick.SQL.Model.Error,
   Rick.SQL.Model.Execution.Result,
   Rick.SQL.Service.FireDAC.Session;
@@ -16,6 +17,7 @@ type
   TRickSQLCoreCommandExecutor = class
   private
     class function CreateSession(const ACommand: TRickSQLCommand;
+      const AProvider: IRickSQLDriverProvider;
       out AError: TRickSQLError): TRickSQLServiceFireDACSession; static;
     class function ExecuteWithSession(
       const ASession: TRickSQLServiceFireDACSession;
@@ -89,11 +91,13 @@ class function TRickSQLCoreCommandExecutor.Execute(
   const ACommand: TRickSQLCommand): TRickSQLExecutionResult;
 var
   LSession: TRickSQLServiceFireDACSession;
+  LProvider: IRickSQLDriverProvider;
   LError: TRickSQLError;
 begin
-  if not TRickSQLCoreCommandValidator.Validate(ACommand, LError) then
+  if not TRickSQLCoreCommandValidator.Validate(
+    ACommand, LProvider, LError) then
     Exit(TRickSQLExecutionResult.Failed(LError));
-  LSession := CreateSession(ACommand, LError);
+  LSession := CreateSession(ACommand, LProvider, LError);
   try
     if not Assigned(LSession) then
       Exit(TRickSQLExecutionResult.Failed(LError));
@@ -118,13 +122,13 @@ begin
 end;
 
 class function TRickSQLCoreCommandExecutor.CreateSession(
-  const ACommand: TRickSQLCommand;
+  const ACommand: TRickSQLCommand; const AProvider: IRickSQLDriverProvider;
   out AError: TRickSQLError): TRickSQLServiceFireDACSession;
 var
   LContext: TRickSQLServiceFireDACDriverContext;
 begin
   LContext := TRickSQLCoreDriverContextFactory.Create(
-    ACommand.Connection, _OPERATION_EXECUTE_COMMAND_, AError);
+    ACommand.Connection, _OPERATION_EXECUTE_COMMAND_, AProvider, AError);
   if not Assigned(LContext) then
     Exit(nil);
   Result := TRickSQLServiceFireDACSession.Create(LContext);

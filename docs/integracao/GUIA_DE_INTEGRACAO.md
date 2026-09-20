@@ -105,26 +105,38 @@ The project has no `packages` directory and no `.dpk` file.
 
 ## Relevant internal organization
 
-`Rick.SQL.Core.Driver.Context.Factory.pas`, through `TRickSQLCoreDriverContextFactory`, centralizes provider resolution (through `Rick.SQL.Core.Driver.Factory`) and client-library resolution (through `Rick.SQL.Core.ClientLibrary.Resolver`) required to create a `TRickSQLServiceFireDACDriverContext`.
+In the normal `Open`/`Execute` pipeline, `Rick.SQL.Core.Connection.Validator` resolves the `IRickSQLDriverProvider` through `Rick.SQL.Core.Driver.Factory` while validating the connection options. `Rick.SQL.Core.Command.Validator` returns that same interface to the executor, which passes it to `TRickSQLCoreDriverContextFactory`.
 
-It is consumed by both `Rick.SQL.Core.Open.Executor` and `Rick.SQL.Core.Command.Executor`, preventing the two executors from duplicating driver-context creation logic.
+`Rick.SQL.Core.Driver.Context.Factory.pas` remains responsible for creating the `TRickSQLServiceFireDACDriverContext` and resolving the client-library path through `Rick.SQL.Core.ClientLibrary.Resolver`, but the main pipeline reuses the provider that was already resolved during validation. The compatible `Create(AOptions, AOperation, AError)` overload remains available for isolated callers and may resolve a provider when one was not supplied.
 
 The `src/error/Rick.SQL.Error.Normalizer.pas` unit centralizes the shared policy for exception normalization, `Message`/`TechnicalDetail` sanitization, and FireDAC metadata extraction. It is placed outside `core` and `services` so both can consume it without introducing a `services -> core` dependency. `Rick.SQL.Core.Error.Parser` remains responsible for the fixed user-facing messages used by core flows and delegates technical normalization.
 
-Client-library resolution remains in `Rick.SQL.Core.ClientLibrary.Resolver`. Applying an already resolved path to the DriverLink `VendorLib` property is centralized in `Rick.SQL.Service.FireDAC.Driver.VendorLibrary`, through `TRickSQLServiceFireDACDriverVendorLibrary`. `Driver.Context`, the compatible `ClientLibraryResolver.Configure` path, and providers with a default `VendorLib` converge on this implementation instead of duplicating assignment mechanics.
+Client-library resolution remains in `Rick.SQL.Core.ClientLibrary.Resolver`. In the main pipeline, its provider-aware `Resolve` overload reads `Definition` from the same provider already returned by validation; the compatible overload without a provider remains available for isolated callers. Applying an already resolved path to the DriverLink `VendorLib` property is centralized in `Rick.SQL.Service.FireDAC.Driver.VendorLibrary`, through `TRickSQLServiceFireDACDriverVendorLibrary`. `Driver.Context`, the compatible `ClientLibraryResolver.Configure` path, and providers with a default `VendorLib` converge on this implementation instead of duplicating assignment mechanics.
 
 The relevant internal flow can be summarized as follows:
 
 ```text
 Open.Executor / Command.Executor
               ↓
-Driver.Context.Factory
+       Command.Validator
               ↓
-Driver.Factory + ClientLibraryResolver
+     Connection.Validator
+              ↓
+       Driver.Factory.Resolve
+              ↓
+     IRickSQLDriverProvider
+              ↓
+   same provider returned to executor
+              ↓
+     Driver.Context.Factory
+              ↓
+      ClientLibraryResolver
+              ↓
+       Provider.Definition
               ↓
         resolved path
               ↓
-        Driver.Context
+   Driver.Context(provider, path)
               ↓
      Provider.CreateDriverLink
               ↓
@@ -133,7 +145,7 @@ FireDAC.Driver.VendorLibrary
           VendorLib
 ```
 
-This consolidation is internal: `Driver.Factory`, `Driver.Context.Factory`, the `Rick.SQL` facade, the fluent API, and the client-library resolution algorithm keep their contracts.
+This reuse is internal to each operation: existing compatible overloads remain available for isolated calls, `Driver.Factory` remains the engine-to-provider composition point, and no global provider/definition cache is introduced. The `Rick.SQL` facade, the fluent API, and the client-library resolution policy keep their existing contracts.
 
 The separation-of-responsibilities policy is documented in [Toxicity control](../engenharia/CONTROLE_DE_TOXICIDADE.md).
 

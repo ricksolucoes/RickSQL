@@ -14,6 +14,7 @@ uses
 
   // RickSQL
   Rick.SQL.Model.Command,
+  Rick.SQL.Model.Contracts,
   Rick.SQL.Model.Error,
   Rick.SQL.Service.FireDAC.Session;
 
@@ -21,6 +22,7 @@ type
   TRickSQLCoreOpenExecutor = class
   private
     class function CreateSession(const ACommand: TRickSQLCommand;
+      const AProvider: IRickSQLDriverProvider;
       out AError: TRickSQLError): TRickSQLServiceFireDACSession; static;
     class function ConfigureConnection(
       const ASession: TRickSQLServiceFireDACSession;
@@ -80,12 +82,14 @@ class function TRickSQLCoreOpenExecutor.Open(
   const ACommand: TRickSQLCommand; out AError: TRickSQLError): TDataSet;
 var
   LSession: TRickSQLServiceFireDACSession;
+  LProvider: IRickSQLDriverProvider;
 begin
   AError := TRickSQLError.Empty;
   Result := nil;
-  if not TRickSQLCoreCommandValidator.Validate(ACommand, AError) then
+  if not TRickSQLCoreCommandValidator.Validate(
+    ACommand, LProvider, AError) then
     Exit;
-  LSession := CreateSession(ACommand, AError);
+  LSession := CreateSession(ACommand, LProvider, AError);
   try
     if not Assigned(LSession) then
       Exit;
@@ -98,13 +102,13 @@ begin
 end;
 
 class function TRickSQLCoreOpenExecutor.CreateSession(
-  const ACommand: TRickSQLCommand;
+  const ACommand: TRickSQLCommand; const AProvider: IRickSQLDriverProvider;
   out AError: TRickSQLError): TRickSQLServiceFireDACSession;
 var
   LContext: TRickSQLServiceFireDACDriverContext;
 begin
   LContext := TRickSQLCoreDriverContextFactory.Create(
-    ACommand.Connection, _OPERATION_OPEN_QUERY_, AError);
+    ACommand.Connection, _OPERATION_OPEN_QUERY_, AProvider, AError);
   if not Assigned(LContext) then
     Exit(nil);
   Result := TRickSQLServiceFireDACSession.Create(LContext);

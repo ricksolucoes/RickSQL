@@ -88,7 +88,7 @@ A regra mínima para qualquer alteração Delphi é não introduzir nova toxicid
 
 ### Medição real atual registrada — 19/09/2026 — `RickSQL.NewTests.dproj`
 
-Em **19/09/2026**, o RAD Studio **Delphi 12 Community Edition** executou `Project > Method Toxicity Metrics` para `RickSQL.NewTests.dproj`, com alvo **Windows 32-bit**. A captura fornecida mostra a grade ordenada por `Toxicity` em ordem decrescente e já contém métodos de `TRickSQLVendorLibraryTests`.
+Em **19/09/2026**, o RAD Studio **Delphi 12 Community Edition** executou `Project > Method Toxicity Metrics` para `RickSQL.NewTests.dproj`, com alvo **Windows 32-bit**. A captura fornecida mostra a grade ordenada por `Toxicity` em ordem decrescente e contém métodos de `TRickSQLVendorLibraryTests` e `TRickSQLDriverProviderReuseTests`.
 
 | Evidência visível na captura | Valor |
 |---|---:|
@@ -101,7 +101,7 @@ Em **19/09/2026**, o RAD Studio **Delphi 12 Community Edition** executou `Projec
 
 Como a grade está ordenada por `Toxicity` e o primeiro valor exibido é `0,350`, **não foi observada violação do threshold oficial de Toxicity no projeto de testes medido**. Isso não significa `Toxicity = 0`; significa que os valores mostrados pela ferramenta estão abaixo do threshold oficial.
 
-A presença de métodos de `TRickSQLVendorLibraryTests` na grade comprova que a medição corresponde ao `RickSQL.NewTests.dproj` depois da inclusão da cobertura da consolidação de `VendorLib`. Na mesma homologação, a suíte oficial foi executada com 124 testes, 124 executados, 0 falhas e 0 erros; o detalhamento da execução fica em [Testes e homologação](../testes/TESTES_E_HOMOLOGACAO.pt-BR.md).
+A presença de métodos de `TRickSQLDriverProviderReuseTests` na grade comprova que a medição corresponde ao `RickSQL.NewTests.dproj` depois da inclusão da cobertura de reutilização de provider/definition. Na mesma rodada documentada de homologação, a suíte oficial foi executada com 135 testes, 135 executados, 0 falhas, 0 erros e 0 overrides; o detalhamento da execução fica em [Testes e homologação](../testes/TESTES_E_HOMOLOGACAO.pt-BR.md).
 
 Essa medição é específica de `RickSQL.NewTests.dproj` e da configuração **Windows 32-bit** mostrada. Ela não deve ser extrapolada como medição real da suíte legada `tests/`, de Win64, de Release, de `FULL_EDITION` ou de projetos que não tenham sido submetidos à ferramenta.
 

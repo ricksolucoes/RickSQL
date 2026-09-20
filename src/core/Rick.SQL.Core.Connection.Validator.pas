@@ -1,4 +1,4 @@
-unit Rick.SQL.Core.Connection.Validator;
+﻿unit Rick.SQL.Core.Connection.Validator;
 
 // Responsabilidade: validar as opções necessárias para estabelecer uma conexão.
 // NAO abre conexões, cria driver links ou executa comandos SQL.
@@ -8,6 +8,7 @@ interface
 uses
   // RickSQL
   Rick.SQL.Model.Connection.Options,
+  Rick.SQL.Model.Contracts,
   Rick.SQL.Model.Error;
 
 type
@@ -39,10 +40,14 @@ type
       const AOptions: TRickSQLConnectionOptions;
       out AError: TRickSQLError): Boolean; static;
     class function ValidateProvider(const AOptions: TRickSQLConnectionOptions;
+      out AProvider: IRickSQLDriverProvider;
       out AError: TRickSQLError): Boolean; static;
   public
     class function Validate(const AOptions: TRickSQLConnectionOptions;
-      out AError: TRickSQLError): Boolean; static;
+      out AError: TRickSQLError): Boolean; overload; static;
+    class function Validate(const AOptions: TRickSQLConnectionOptions;
+      out AProvider: IRickSQLDriverProvider;
+      out AError: TRickSQLError): Boolean; overload; static;
   end;
 
 implementation
@@ -53,7 +58,6 @@ uses
 
   // RickSQL
   Rick.SQL.Model.Types,
-  Rick.SQL.Model.Contracts,
   Rick.SQL.Core.Driver.Factory;
 
 const
@@ -213,6 +217,7 @@ end;
 
 class function TRickSQLCoreConnectionValidator.ValidateProvider(
   const AOptions: TRickSQLConnectionOptions;
+  out AProvider: IRickSQLDriverProvider;
   out AError: TRickSQLError): Boolean;
 var
   LProvider: IRickSQLDriverProvider;
@@ -225,12 +230,24 @@ begin
   Result := LProvider.ValidateOptions(AOptions, LMessage);
   if not Result then
     Exit(Fail(LMessage, AError));
+  AProvider := LProvider;
 end;
 
 class function TRickSQLCoreConnectionValidator.Validate(
   const AOptions: TRickSQLConnectionOptions;
   out AError: TRickSQLError): Boolean;
+var
+  LProvider: IRickSQLDriverProvider;
 begin
+  Result := Validate(AOptions, LProvider, AError);
+end;
+
+class function TRickSQLCoreConnectionValidator.Validate(
+  const AOptions: TRickSQLConnectionOptions;
+  out AProvider: IRickSQLDriverProvider;
+  out AError: TRickSQLError): Boolean;
+begin
+  AProvider := nil;
   AError := TRickSQLError.Empty;
   if not ValidateEngine(AOptions, AError) then
     Exit(False);
@@ -238,7 +255,7 @@ begin
     Exit(Fail(_ERROR_CONNECTION_NOT_CONFIGURED_, AError));
   if not ValidateGeneralOptions(AOptions, AError) then
     Exit(False);
-  Result := ValidateProvider(AOptions, AError);
+  Result := ValidateProvider(AOptions, AProvider, AError);
 end;
 
 end.

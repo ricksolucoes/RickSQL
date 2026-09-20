@@ -21,12 +21,17 @@ type
       out AError: TRickSQLError): IRickSQLDriverProvider; static;
     class function ResolveLibrary(
       const AOptions: TRickSQLConnectionOptions;
+      const AProvider: IRickSQLDriverProvider;
       out AError: TRickSQLError): string; static;
     class function CreateDriverError(const AOperation: string): TRickSQLError; static;
   public
     class function Create(const AOptions: TRickSQLConnectionOptions;
       const AOperation: string;
-      out AError: TRickSQLError): TRickSQLServiceFireDACDriverContext; static;
+      out AError: TRickSQLError): TRickSQLServiceFireDACDriverContext; overload; static;
+    // AProvider deve corresponder a AOptions.Engine; ownership não é transferido.
+    class function Create(const AOptions: TRickSQLConnectionOptions;
+      const AOperation: string; const AProvider: IRickSQLDriverProvider;
+      out AError: TRickSQLError): TRickSQLServiceFireDACDriverContext; overload; static;
   end;
 
 implementation
@@ -47,15 +52,30 @@ class function TRickSQLCoreDriverContextFactory.Create(
   out AError: TRickSQLError): TRickSQLServiceFireDACDriverContext;
 var
   LProvider: IRickSQLDriverProvider;
-  LPath: string;
 begin
   Result := nil;
   LProvider := ResolveProvider(AOptions, AOperation, AError);
   if LProvider = nil then
     Exit;
-  LPath := ResolveLibrary(AOptions, AError);
+  Result := Create(AOptions, AOperation, LProvider, AError);
+end;
+
+class function TRickSQLCoreDriverContextFactory.Create(
+  const AOptions: TRickSQLConnectionOptions; const AOperation: string;
+  const AProvider: IRickSQLDriverProvider;
+  out AError: TRickSQLError): TRickSQLServiceFireDACDriverContext;
+var
+  LPath: string;
+begin
+  Result := nil;
+  if AProvider = nil then
+  begin
+    AError := CreateDriverError(AOperation);
+    Exit;
+  end;
+  LPath := ResolveLibrary(AOptions, AProvider, AError);
   if not AError.HasError then
-    Result := TRickSQLServiceFireDACDriverContext.Create(LProvider, LPath);
+    Result := TRickSQLServiceFireDACDriverContext.Create(AProvider, LPath);
 end;
 
 class function TRickSQLCoreDriverContextFactory.ResolveProvider(
@@ -71,12 +91,14 @@ end;
 
 class function TRickSQLCoreDriverContextFactory.ResolveLibrary(
   const AOptions: TRickSQLConnectionOptions;
+  const AProvider: IRickSQLDriverProvider;
   out AError: TRickSQLError): string;
 var
   LResolution: TRickSQLClientLibraryResolution;
 begin
   Result := '';
-  LResolution := TRickSQLCoreClientLibraryResolver.Resolve(AOptions, AError);
+  LResolution := TRickSQLCoreClientLibraryResolver.Resolve(
+    AOptions, AProvider, AError);
   if LResolution.Success then
     Result := LResolution.Path;
 end;

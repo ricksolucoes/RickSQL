@@ -16,6 +16,8 @@ NewTests/
 └── src/
     ├── ClientLibrary/
     │   └── Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas
+    ├── Driver/
+    │   └── Rick.SQL.Tests.Driver.ProviderReuse.pas
     ├── Error/
     │   ├── Rick.SQL.Tests.Error.Integration.pas
     │   └── Rick.SQL.Tests.Error.Normalizer.pas
@@ -29,7 +31,7 @@ NewTests/
 
 O projeto `RickSQL.NewTests` consome a implementação de produção em `../src` e não depende estruturalmente de `tests/`.
 
-A suíte atual registra **124 testes DUnit em seis classes**, incluindo `TRickSQLVendorLibraryTests` em `NewTests/src/ClientLibrary/`. Em **19/09/2026**, o DUnit GUI Test Runner executou **124/124**, com **0 falhas**, **0 erros** e **Score 100%**, no ciclo de homologação documentado para Delphi 12 Community Edition / Windows 32-bit. No mesmo ciclo, `RickConnection.dproj` registrou build **Debug/Win32: Success**. Os detalhes e os limites dessas evidências estão em [Testes e homologação](TESTES_E_HOMOLOGACAO.pt-BR.md).
+A suíte atual registra **135 testes DUnit em sete classes**, incluindo `TRickSQLVendorLibraryTests` em `NewTests/src/ClientLibrary/` e `TRickSQLDriverProviderReuseTests` em `NewTests/src/Driver/`. Em **19/09/2026**, a evidência fornecida para `RickSQL.NewTests.dproj` em **Windows 32-bit** mostra o projeto como **[Built]** no Delphi 12 Community Edition, e o DUnit GUI Test Runner executou **135/135**, com **0 falhas**, **0 erros**, **0 overrides** e **Score 100%**. Um build `RickConnection.dproj` **Debug/Win32: Success** registrado anteriormente é mantido separadamente como evidência histórica e não foi revalidado na rodada atual de reutilização do provider. Os detalhes e os limites dessas evidências estão em [Testes e homologação](TESTES_E_HOMOLOGACAO.pt-BR.md).
 
 A documentação detalhada da suíte legada permanece separada por finalidade:
 

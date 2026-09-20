@@ -33,6 +33,7 @@ uses
   // RickSQL
   Rick.SQL.Model.Types,
   Rick.SQL.Model.Connection.Options,
+  Rick.SQL.Model.Contracts,
   Rick.SQL.Model.Driver.Definition,
   Rick.SQL.Model.Error;
 
@@ -128,6 +129,7 @@ type
     class function CreateError(const AMessage: string;
       const ADetail: string): TRickSQLError; static;
     class function ResolveInternal(const AOptions: TRickSQLConnectionOptions;
+      const AProvider: IRickSQLDriverProvider;
       out AError: TRickSQLError): TRickSQLClientLibraryResolution; static;
     class function ResolveByContext(
       const AContext: TRickSQLClientLibrarySearchContext;
@@ -178,7 +180,11 @@ type
       out AError: TRickSQLError): Boolean; static;
   public
     class function Resolve(const AOptions: TRickSQLConnectionOptions;
-      out AError: TRickSQLError): TRickSQLClientLibraryResolution; static;
+      out AError: TRickSQLError): TRickSQLClientLibraryResolution; overload; static;
+    // AProvider deve corresponder a AOptions.Engine; ownership não é transferido.
+    class function Resolve(const AOptions: TRickSQLConnectionOptions;
+      const AProvider: IRickSQLDriverProvider;
+      out AError: TRickSQLError): TRickSQLClientLibraryResolution; overload; static;
     class function Configure(
       const AConfiguration: TRickSQLClientLibraryConfiguration;
       out AError: TRickSQLError): Boolean; static;
@@ -193,7 +199,6 @@ uses
   Winapi.Windows,
 
   // RickSQL
-  Rick.SQL.Model.Contracts,
   Rick.SQL.Core.Driver.Factory,
   Rick.SQL.Error.Normalizer,
   Rick.SQL.Service.FireDAC.Driver.VendorLibrary;
@@ -807,29 +812,50 @@ end;
 
 class function TRickSQLCoreClientLibraryResolver.ResolveInternal(
   const AOptions: TRickSQLConnectionOptions;
+  const AProvider: IRickSQLDriverProvider;
   out AError: TRickSQLError): TRickSQLClientLibraryResolution;
 var
-  LProvider: IRickSQLDriverProvider;
+  LDefinition: TRickSQLDriverDefinition;
   LContext: TRickSQLClientLibrarySearchContext;
 begin
   AError := TRickSQLError.Empty;
-  LProvider := TRickSQLCoreDriverFactory.Resolve(AOptions.Engine);
-  if LProvider = nil then
+  if AProvider = nil then
   begin
     AError := CreateError(_ERROR_DRIVER_NOT_FOUND_, '');
     Exit(TRickSQLClientLibraryResolution.Empty);
   end;
+  LDefinition := AProvider.Definition;
   LContext := TRickSQLClientLibrarySearchContext.Create(
-    AOptions, LProvider.Definition);
+    AOptions, LDefinition);
   Result := ResolveByContext(LContext, AError);
 end;
 
 class function TRickSQLCoreClientLibraryResolver.Resolve(
   const AOptions: TRickSQLConnectionOptions;
   out AError: TRickSQLError): TRickSQLClientLibraryResolution;
+var
+  LProvider: IRickSQLDriverProvider;
 begin
   try
-    Result := ResolveInternal(AOptions, AError);
+    LProvider := TRickSQLCoreDriverFactory.Resolve(AOptions.Engine);
+    Result := ResolveInternal(AOptions, LProvider, AError);
+  except
+    on E: Exception do
+    begin
+      AError := TRickSQLErrorNormalizer.FromException(E,
+        TRickSQLErrorKind.ClientLibrary, _ERROR_UNEXPECTED_, _OPERATION_);
+      Result := TRickSQLClientLibraryResolution.Empty;
+    end;
+  end;
+end;
+
+class function TRickSQLCoreClientLibraryResolver.Resolve(
+  const AOptions: TRickSQLConnectionOptions;
+  const AProvider: IRickSQLDriverProvider;
+  out AError: TRickSQLError): TRickSQLClientLibraryResolution;
+begin
+  try
+    Result := ResolveInternal(AOptions, AProvider, AError);
   except
     on E: Exception do
     begin

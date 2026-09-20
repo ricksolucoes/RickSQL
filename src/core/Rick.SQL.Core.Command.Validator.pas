@@ -1,4 +1,4 @@
-unit Rick.SQL.Core.Command.Validator;
+﻿unit Rick.SQL.Core.Command.Validator;
 
 // Responsabilidade: validar os dados necessários para executar um comando SQL.
 // NAO cria conexões, executa SQL ou conhece interface visual.
@@ -8,6 +8,7 @@ interface
 uses
   // RickSQL
   Rick.SQL.Model.Command,
+  Rick.SQL.Model.Contracts,
   Rick.SQL.Model.Error;
 
 type
@@ -21,7 +22,10 @@ type
       out AError: TRickSQLError): Boolean; static;
   public
     class function Validate(const ACommand: TRickSQLCommand;
-      out AError: TRickSQLError): Boolean; static;
+      out AError: TRickSQLError): Boolean; overload; static;
+    class function Validate(const ACommand: TRickSQLCommand;
+      out AProvider: IRickSQLDriverProvider;
+      out AError: TRickSQLError): Boolean; overload; static;
   end;
 
 implementation
@@ -77,16 +81,32 @@ end;
 class function TRickSQLCoreCommandValidator.Validate(
   const ACommand: TRickSQLCommand;
   out AError: TRickSQLError): Boolean;
+var
+  LProvider: IRickSQLDriverProvider;
 begin
+  Result := Validate(ACommand, LProvider, AError);
+end;
+
+class function TRickSQLCoreCommandValidator.Validate(
+  const ACommand: TRickSQLCommand;
+  out AProvider: IRickSQLDriverProvider;
+  out AError: TRickSQLError): Boolean;
+var
+  LProvider: IRickSQLDriverProvider;
+begin
+  AProvider := nil;
   AError := TRickSQLError.Empty;
   if not ValidateSQL(ACommand, AError) then
     Exit(False);
   if not TRickSQLCoreConnectionValidator.Validate(
-    ACommand.Connection, AError) then
+    ACommand.Connection, LProvider, AError) then
     Exit(False);
   if not ValidateOptions(ACommand, AError) then
     Exit(False);
-  Result := TRickSQLCoreParameterValidator.Validate(ACommand, AError);
+  if not TRickSQLCoreParameterValidator.Validate(ACommand, AError) then
+    Exit(False);
+  AProvider := LProvider;
+  Result := True;
 end;
 
 end.
