@@ -10,36 +10,13 @@ interface
 type
   TRickSQLDriverProviderClass = class of TInterfacedObject;
 
-  TRickSQLDatabaseEngine = (
-    Unknown,
-    Firebird,
-    InterBase,
-    PostgreSQL,
-    SQLServer,
-    MySQL,
-    SQLite,
-    Oracle,
-    DB2,
-    SQLAnywhere,
-    Informix,
-    Advantage,
-    Access,
-    ODBC
-  );
+  TRickSQLDatabaseEngine = (Unknown, Firebird, InterBase, PostgreSQL, SQLServer,
+                            MySQL, SQLite, Oracle, DB2, SQLAnywhere, Informix,
+                            Advantage, Access, ODBC);
 
-  TRickSQLErrorKind = (
-    None,
-    Validation,
-    UnsupportedDatabase,
-    Driver,
-    ClientLibrary,
-    Connection,
-    Command,
-    Parameter,
-    Transaction,
-    DataSet,
-    Unexpected
-  );
+  TRickSQLErrorKind = (None, Validation, UnsupportedDatabase, Driver,
+                        ClientLibrary, Connection, Command, Parameter,
+                        Transaction, DataSet, Unexpected);
 
 implementation
 

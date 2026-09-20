@@ -14,10 +14,8 @@ type
     Success: Boolean;
     RowsAffected: Integer;
     Error: TRickSQLError;
-    class function Succeeded(const ARowsAffected: Integer)
-      : TRickSQLExecutionResult; static;
-    class function Failed(const AError: TRickSQLError)
-      : TRickSQLExecutionResult; static;
+    class function Succeeded(const ARowsAffected: Integer): TRickSQLExecutionResult; static;
+    class function Failed(const AError: TRickSQLError): TRickSQLExecutionResult; static;
 
     class function Default: TRickSQLExecutionResult; static;
   end;

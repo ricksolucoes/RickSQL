@@ -9,6 +9,18 @@
         <Projects Include="tests\RickSQL.Tests.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="samples\console\RickSQL.Sample.Console.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="samples\fmx\RickSQL.Sample.FMX.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="samples\Interface\RickSQL.Sample.Interf.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="samples\servico-windows\RickSQL.Sample.ServicoWindows.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -35,14 +47,50 @@
     <Target Name="RickSQL_Tests:Make">
         <MSBuild Projects="tests\RickSQL.Tests.dproj" Targets="Make"/>
     </Target>
+    <Target Name="RickSQL_Sample_Console">
+        <MSBuild Projects="samples\console\RickSQL.Sample.Console.dproj"/>
+    </Target>
+    <Target Name="RickSQL_Sample_Console:Clean">
+        <MSBuild Projects="samples\console\RickSQL.Sample.Console.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="RickSQL_Sample_Console:Make">
+        <MSBuild Projects="samples\console\RickSQL.Sample.Console.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="RickSQL_Sample_FMX">
+        <MSBuild Projects="samples\fmx\RickSQL.Sample.FMX.dproj"/>
+    </Target>
+    <Target Name="RickSQL_Sample_FMX:Clean">
+        <MSBuild Projects="samples\fmx\RickSQL.Sample.FMX.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="RickSQL_Sample_FMX:Make">
+        <MSBuild Projects="samples\fmx\RickSQL.Sample.FMX.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="RickSQL_Sample_Interf">
+        <MSBuild Projects="samples\Interface\RickSQL.Sample.Interf.dproj"/>
+    </Target>
+    <Target Name="RickSQL_Sample_Interf:Clean">
+        <MSBuild Projects="samples\Interface\RickSQL.Sample.Interf.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="RickSQL_Sample_Interf:Make">
+        <MSBuild Projects="samples\Interface\RickSQL.Sample.Interf.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="RickSQL_Sample_ServicoWindows">
+        <MSBuild Projects="samples\servico-windows\RickSQL.Sample.ServicoWindows.dproj"/>
+    </Target>
+    <Target Name="RickSQL_Sample_ServicoWindows:Clean">
+        <MSBuild Projects="samples\servico-windows\RickSQL.Sample.ServicoWindows.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="RickSQL_Sample_ServicoWindows:Make">
+        <MSBuild Projects="samples\servico-windows\RickSQL.Sample.ServicoWindows.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="RickConnection;RickSQL_Tests"/>
+        <CallTarget Targets="RickConnection;RickSQL_Tests;RickSQL_Sample_Console;RickSQL_Sample_FMX;RickSQL_Sample_Interf;RickSQL_Sample_ServicoWindows"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="RickConnection:Clean;RickSQL_Tests:Clean"/>
+        <CallTarget Targets="RickConnection:Clean;RickSQL_Tests:Clean;RickSQL_Sample_Console:Clean;RickSQL_Sample_FMX:Clean;RickSQL_Sample_Interf:Clean;RickSQL_Sample_ServicoWindows:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="RickConnection:Make;RickSQL_Tests:Make"/>
+        <CallTarget Targets="RickConnection:Make;RickSQL_Tests:Make;RickSQL_Sample_Console:Make;RickSQL_Sample_FMX:Make;RickSQL_Sample_Interf:Make;RickSQL_Sample_ServicoWindows:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

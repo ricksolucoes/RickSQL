@@ -12,12 +12,7 @@ uses
 {$SCOPEDENUMS ON}
 
 type
-  TRickSQLConnectionRequirement = (
-    Server,
-    Database,
-    UserName,
-    Password
-  );
+  TRickSQLConnectionRequirement = (Server, Database, UserName, Password);
 
   TRickSQLConnectionRequirements = set of TRickSQLConnectionRequirement;
   TRickSQLStringArray = TArray<string>;
@@ -31,8 +26,7 @@ type
     class function Create(const AEngine: TRickSQLDatabaseEngine;
       const ADriverID: string): TRickSQLDriverDefinition; static;
     procedure AddClientLibrary(const AName: string);
-    function Requires(const ARequirement: TRickSQLConnectionRequirement)
-      : Boolean;
+    function Requires(const ARequirement: TRickSQLConnectionRequirement): Boolean;
   end;
 
 implementation
