@@ -25,6 +25,10 @@ The executable projects are located under [`tests/compilacao`](../../tests/compi
 17. [`RickSQL.Facade.ContractTest.dpr`](../../tests/compilacao/RickSQL.Facade.ContractTest.dpr) — contract of the `Rick.SQL` facade.
 18. [`RickSQL.LibraryPath.FinalTest.dpr`](../../tests/compilacao/RickSQL.LibraryPath.FinalTest.dpr) — final consumption through Library/Search Path without a package.
 
+## Divergent legacy expectation — Driver Factory
+
+`RickSQL.Driver.FactoryCompilationTest.dpr` blindly iterates `Low(TRickSQLDatabaseEngine)..High(TRickSQLDatabaseEngine)` and requires a non-nil provider for every value, including `Unknown`. The current normative contract treats `Unknown` as the sentinel for no operational engine, and `TRickSQLCoreDriverFactory.Resolve(Unknown)` returns `nil`. Official coverage in `NewTests/src/Driver/Rick.SQL.Tests.Driver.Contracts.pas` tests `Unknown` separately and explicitly enumerates the 13 supported engines. The legacy project remains unchanged.
+
 ## Conditional directives
 
 The SQL Server, Oracle, DB2, SQL Anywhere, Informix, and ODBC providers are conditional on `FULL_EDITION`. Tests that exercise functional methods of those providers must be compiled with that symbol configured under **Project > Options > Delphi Compiler > Conditional defines** or through `-D`.

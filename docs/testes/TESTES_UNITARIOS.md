@@ -30,9 +30,9 @@ Then open each `.dpr`, compile it, and run it in the applicable Delphi environme
 
 These projects do not open connections to external databases. Their purpose is to validate internal contracts before integration testing.
 
-## Known discrepancy in the current state
+## Divergent legacy expectation
 
-`RickSQL.Unitarios.Drivers.Test.dpr` expects `DefaultPort = 0` for `TRickSQLDatabaseEngine.Informix`, while `src/services/drivers/Rick.SQL.Service.FireDAC.Driver.Informix.pas` defines `DefaultPort := 9088` in both compilation branches. This case is therefore out of sync with the implementation and must not be treated as a valid provider contract until the code and test are reconciled.
+`RickSQL.Unitarios.Drivers.Test.dpr` still expects `DefaultPort = 0` for `TRickSQLDatabaseEngine.Informix`. This expectation is retained only as historical evidence: the current normative contract, covered by `NewTests/src/Driver/Rick.SQL.Tests.Driver.Contracts.pas`, is `DefaultPort = 9088`, the value defined in both the `FULL_EDITION` and fallback provider branches and published in `docs/bancos/BANCOS_SUPORTADOS.md`. The legacy suite is not the quality gate for this contract.
 
 ## Expected harness behavior
 

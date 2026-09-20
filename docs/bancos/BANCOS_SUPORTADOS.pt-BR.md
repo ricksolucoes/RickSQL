@@ -31,7 +31,7 @@ Os valores de porta padrão e os nomes das bibliotecas cliente esperadas são de
 
 ## Disponibilidade por configuração de compilação
 
-Todos os treze valores do enum possuem provider registrado na `Rick.SQL.Core.Driver.Factory`. Entretanto, seis implementações são condicionadas ao símbolo `FULL_EDITION`:
+Os treze engines operacionais do enum possuem provider registrado na `Rick.SQL.Core.Driver.Factory`. `Unknown` é a sentinela de ausência de engine operacional e, por contrato, não resolve provider. Entre os treze engines suportados, seis implementações são condicionadas ao símbolo `FULL_EDITION`:
 
 - SQL Server;
 - Oracle;

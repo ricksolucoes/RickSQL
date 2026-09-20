@@ -30,7 +30,7 @@ Default ports and the expected client-library names are defined internally by ea
 
 ## Availability by compilation configuration
 
-All thirteen enum values have a provider registered in `Rick.SQL.Core.Driver.Factory`. However, six implementations are conditional on the `FULL_EDITION` symbol:
+The thirteen operational engines in the enum have providers registered in `Rick.SQL.Core.Driver.Factory`. `Unknown` is the sentinel for no operational engine and, by contract, resolves no provider. Of the thirteen supported engines, six implementations are conditional on the `FULL_EDITION` symbol:
 
 - SQL Server;
 - Oracle;

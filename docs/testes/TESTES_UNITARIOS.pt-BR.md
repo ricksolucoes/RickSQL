@@ -30,9 +30,9 @@ Depois abra cada `.dpr`, compile e execute no ambiente Delphi aplicável.
 
 Esses projetos não abrem conexão com banco externo. O objetivo é validar contratos internos antes dos testes de integração.
 
-## Divergência conhecida no estado atual
+## Expectativa legada divergente
 
-`RickSQL.Unitarios.Drivers.Test.dpr` espera `DefaultPort = 0` para `TRickSQLDatabaseEngine.Informix`, enquanto `src/services/drivers/Rick.SQL.Service.FireDAC.Driver.Informix.pas` define `DefaultPort := 9088` nos dois ramos de compilação. Portanto, esse caso está desalinhado com a implementação e não deve ser interpretado como um contrato válido do provider até que código e teste sejam reconciliados.
+`RickSQL.Unitarios.Drivers.Test.dpr` continua esperando `DefaultPort = 0` para `TRickSQLDatabaseEngine.Informix`. Essa expectativa foi mantida apenas como evidência histórica: o contrato normativo atual, coberto por `NewTests/src/Driver/Rick.SQL.Tests.Driver.Contracts.pas`, é `DefaultPort = 9088`, valor definido nos branches `FULL_EDITION` e fallback do provider e publicado em `docs/bancos/BANCOS_SUPORTADOS.pt-BR.md`. A suíte legada não é o quality gate desse contrato.
 
 ## Resultado esperado
 

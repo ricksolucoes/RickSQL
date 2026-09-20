@@ -16,6 +16,7 @@ NewTests/
     ├── ClientLibrary/
     │   └── Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas
     ├── Driver/
+    │   ├── Rick.SQL.Tests.Driver.Contracts.pas
     │   └── Rick.SQL.Tests.Driver.ProviderReuse.pas
     ├── Error/
     │   ├── Rick.SQL.Tests.Error.Integration.pas
@@ -52,9 +53,9 @@ Detailed documentation for the legacy suite is separated by purpose:
 
 ## Official new suite
 
-`NewTests/RickSQL.NewTests.dpr` is the DUnit entry point using the GUI Test Runner. Units under `NewTests/src/Error/` cover shared `TRickSQLError` normalization and integration of the components changed by the exception refactoring. `NewTests/src/Infrastructure/Rick.SQL.Tests.FireDAC.WaitProvider.pas` validates the VCL `IFDGUIxWaitCursor` provider registered by the resolver. `NewTests/src/Validation/Rick.SQL.Tests.Parameter.Validator.pas` covers SQL parameter identification and validation without depending on an external database. `NewTests/src/Transaction/Rick.SQL.Tests.Transaction.pas` covers transaction state, `Start`, `Commit`, `Rollback`, `RollbackAfterFailure`, `Active` compatibility, and `UseTransaction=False` using local SQLite. `NewTests/src/ClientLibrary/Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas` covers the canonical `VendorLib` application authority, the compatible `Configure` path, the `Driver.Context`/`Driver.Context.Factory` flow, empty paths, missing properties, setter failures, observable equivalence, and provider-default preservation. `NewTests/src/Driver/Rick.SQL.Tests.Driver.ProviderReuse.pas` covers provider/definition consistency, compatibility overloads, propagation of the provider resolved during validation, reuse by `ClientLibraryResolver` and `Driver.Context.Factory`, operation isolation, and the `Execute`/`Open` SQLite paths. `NewTests/src/Facade/Rick.SQL.Tests.Fluent.Lifecycle.pas` characterizes the stateful fluent lifecycle, parameter clearing, option persistence, result reset, successive operations, dataset ownership, and instance isolation using local SQLite. `NewTests/src/Materialization/Rick.SQL.Tests.DataSet.Materializer.pas` characterizes the `FetchAll` default, the four combinations of `FetchAll` with unlimited/limited `MaxRecords`, and use of the materialized dataset after the internal session is released.
+`NewTests/RickSQL.NewTests.dpr` is the DUnit entry point using the GUI Test Runner. Units under `NewTests/src/Error/` cover shared `TRickSQLError` normalization and integration of the components changed by the exception refactoring. `NewTests/src/Infrastructure/Rick.SQL.Tests.FireDAC.WaitProvider.pas` validates the VCL `IFDGUIxWaitCursor` provider registered by the resolver. `NewTests/src/Validation/Rick.SQL.Tests.Parameter.Validator.pas` covers SQL parameter identification and validation without depending on an external database. `NewTests/src/Transaction/Rick.SQL.Tests.Transaction.pas` covers transaction state, `Start`, `Commit`, `Rollback`, `RollbackAfterFailure`, `Active` compatibility, and `UseTransaction=False` using local SQLite. `NewTests/src/ClientLibrary/Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas` covers the canonical `VendorLib` application authority, the compatible `Configure` path, the `Driver.Context`/`Driver.Context.Factory` flow, empty paths, missing properties, setter failures, observable equivalence, and provider-default preservation. `NewTests/src/Driver/Rick.SQL.Tests.Driver.ProviderReuse.pas` covers provider/definition consistency, compatibility overloads, propagation of the provider resolved during validation, reuse by `ClientLibraryResolver` and `Driver.Context.Factory`, operation isolation, and the `Execute`/`Open` SQLite paths. `NewTests/src/Driver/Rick.SQL.Tests.Driver.Contracts.pas` establishes the normative factory contracts: `Unknown` resolves no provider, the 13 supported engines resolve coherent providers, and Informix exposes `DriverID = Infx` and `DefaultPort = 9088`, plus the functional/fallback behavior selected by `FULL_EDITION`. `NewTests/src/Facade/Rick.SQL.Tests.Fluent.Lifecycle.pas` characterizes the stateful fluent lifecycle, parameter clearing, option persistence, result reset, successive operations, dataset ownership, and instance isolation using local SQLite. `NewTests/src/Materialization/Rick.SQL.Tests.DataSet.Materializer.pas` characterizes the `FetchAll` default, the four combinations of `FetchAll` with unlimited/limited `MaxRecords`, and use of the materialized dataset after the internal session is released.
 
-The current source suite registers nine test classes:
+The current source suite registers ten test classes and **163 active tests** in each compilation configuration:
 
 - `TRickSQLErrorNormalizerTests` — 6 tests covering generic exceptions, sanitization, parser contract, deterministic FireDAC metadata, and preservation of the code actually supplied by SQLite/FireDAC;
 - `TRickSQLErrorIntegrationTests` — 8 integration tests covering Driver Context, Connection, Query, Session, Parameter Binder, Transaction, DataSet Materializer, and Client Library Resolver;
@@ -63,23 +64,28 @@ The current source suite registers nine test classes:
 - `TRickSQLTransactionTests` — 24 DUnit tests covering active/inactive state, deterministic `InTransaction` inspection failure, `Start`, `Commit`, `Rollback`, primary-error preservation in `RollbackAfterFailure`, the compatible `Active` contract, and `UseTransaction=False`.
 - `TRickSQLVendorLibraryTests` — 15 DUnit tests covering canonical `VendorLib` application, empty paths, a DriverLink without `VendorLib`, setter failure, `ClientLibraryResolver.Configure`, `Driver.Context`, `Driver.Context.Factory`, preservation of the `ClientLibrary` and `Driver` classifications, path equivalence, and the InterBase provider default;
 - `TRickSQLDriverProviderReuseTests` — 11 DUnit tests covering provider/definition correspondence, compatibility overloads, reuse of the provider returned by validation, provider-aware client-library resolution and driver-context creation, isolation between independent operations, and the `Execute`/`Open` SQLite paths;
+- `TRickSQLDriverContractTests` — 5 active tests per configuration covering `Unknown` as a sentinel without a provider, resolution of the 13 supported engines, `Informix.DefaultPort = 9088`, and `ValidateOptions`/`CreateDriverLink` behavior for the applicable `FULL_EDITION` branch;
 - `TRickSQLFluentLifecycleTests` — 17 DUnit characterization tests covering initial state, persisted parameters/options, `Clear`, error reset, `Open`/`Execute` sequences, `Owner(True)`, `Owner(False)`, destruction, and isolation between instances;
 - `TRickSQLDataSetMaterializerTests` — 6 DUnit characterization tests covering the `FetchAll` default, `FetchAll=True/False` with `MaxRecords=0`, `FetchAll=True/False` with a positive limit, and independence of the dataset returned by `Open` after the internal session is released.
 
-### Current recorded real execution — 2026-09-20
+### Latest supplied real execution — 2026-09-20 — current driver-contract suite
 
-The supplied **DUnit + GUI Test Runner** result file records `RickSQL.NewTests.exe` executing the complete current source suite. All 158 test elements have a `PASS` result, and the statistics block records:
+The supplied **DUnit + GUI Test Runner** result file records `RickSQL.NewTests.exe` executing the current ten-class suite. All 163 test elements have a `PASS` result, and the statistics block records:
 
 ```text
-Tests:        158
+Tests:        163
 Failures:       0
 Errors:         0
 Success Rate: 100%
-Finished At:  20/09/2026 10:13:44
+Finished At:  20/09/2026 11:14:06
 Runtime:      00:00:00
 ```
 
-The 158 tests correspond to the current suite across nine classes. All six `TRickSQLDataSetMaterializerTests` passed, including the `FetchAll=True/False`, `MaxRecords=0/N`, and dataset-after-session-release scenarios. The XML demonstrates test execution and results; it does **not**, by itself, identify the IDE edition, target platform, build configuration, Win64, Release, or `FULL_EDITION`, so no new build claim is inferred from it.
+The execution includes all five `TRickSQLDriverContractTests`: `Factory_Unknown_ReturnsNil`, `Factory_SupportedEngines_ResolveProviders`, `Informix_Definition_ExposesExpectedContract`, `Informix_Fallback_ValidateOptionsRejectsUse`, and `Informix_Fallback_CreateDriverLinkRaisesFullEditionRequired`. Therefore, the current result provides real execution evidence for `Unknown` as a sentinel without a provider, resolution of the 13 supported engines, `Informix.DefaultPort = 9088`, and the Informix fallback contract. Because the two conditional Informix behavior tests executed are explicitly the fallback variants, this evidence demonstrates the configuration **without `FULL_EDITION`**. It must not be extrapolated to the `FULL_EDITION` branch. The XML does not identify the IDE edition, target platform, build configuration, Win64, or Release.
+
+### Historical recorded real execution — 2026-09-20 — before the driver-contract class
+
+The previously supplied DUnit GUI Test Runner result for the immediately preceding revision recorded **158/158** tests with **0 failures**, **0 errors**, and a **100% success rate**, finished at **20/09/2026 10:13:44**. That run covered nine classes, including all six `TRickSQLDataSetMaterializerTests`, but predated `TRickSQLDriverContractTests`. It remains historical evidence only.
 
 ### Historical recorded real execution — 2026-09-19 — before the materialization class
 
@@ -110,7 +116,7 @@ Overrides:    0
 Score:      100%
 ```
 
-The total of 135 matched the `published` methods in that historical revision: 6 in `TRickSQLErrorNormalizerTests`, 8 in `TRickSQLErrorIntegrationTests`, 1 in `TRickSQLFireDACWaitProviderTests`, 70 in `TRickSQLParameterValidatorTests`, 24 in `TRickSQLTransactionTests`, 15 in `TRickSQLVendorLibraryTests`, and 11 in `TRickSQLDriverProviderReuseTests`. This result is retained as historical validation only; it was followed by the intermediate 152/152 run and, for the current suite, the 158/158 run documented above.
+The total of 135 matched the `published` methods in that historical revision: 6 in `TRickSQLErrorNormalizerTests`, 8 in `TRickSQLErrorIntegrationTests`, 1 in `TRickSQLFireDACWaitProviderTests`, 70 in `TRickSQLParameterValidatorTests`, 24 in `TRickSQLTransactionTests`, 15 in `TRickSQLVendorLibraryTests`, and 11 in `TRickSQLDriverProviderReuseTests`. This result is retained as historical validation only; it was followed by the intermediate 152/152 run and the 158/158 run, which predates the current driver-contract class.
 
 ### Historical recorded build evidence — 2026-09-19 — `RickSQL.NewTests.dproj`
 
@@ -131,7 +137,7 @@ That result is retained as historical evidence for the configuration shown. `Ric
 
 On **2026-09-18**, an earlier suite version that did not yet include `TRickSQLTransactionTests` ran 84 tests with 0 failures and 0 errors. Later, during the transaction fix, a 108-test execution reported 107 passed, 1 failure, and 0 errors; the failure in `UseTransactionFalse_NaoDeveIntroduzirErroTransacional` exposed the missing `IFDGUIxWaitCursor` factory. Explicit Console/VCL/FMX provider selection and `TRickSQLFireDACWaitProviderTests` were added afterward. A later intermediate round, before `TRickSQLDriverProviderReuseTests` was added, executed **124/124** tests with no failures or errors.
 
-Those earlier results are retained only as history. The latest documented real execution is the current-suite **158/158** run, with 0 failures, 0 errors, and a 100% success rate, finished at 2026-09-20 10:13:44. Current real Method Toxicity measurements for both production `src` and `NewTests`, supplied in the 2026-09-20 validation round, are recorded in [Toxicity control](../engenharia/CONTROLE_DE_TOXICIDADE.md).
+Those earlier results are retained only as history. The latest documented real execution is the **163/163** run, with 0 failures, 0 errors, and a 100% success rate, finished at 2026-09-20 11:14:06. It includes `TRickSQLDriverContractTests` and evidences the Informix fallback configuration, while the `FULL_EDITION` branch remains without current execution evidence. The latest real Method Toxicity measurements also include the driver-contract unit and are recorded in [Toxicity control](../engenharia/CONTROLE_DE_TOXICIDADE.md).
 
 ## Validation order
 
@@ -154,7 +160,7 @@ Details and prerequisites are documented in [Compilation tests](TESTES_DE_COMPIL
 
 The `tests/unitarios` directory contains four isolated projects for models, validators, drivers, and errors. They do not depend on an external database connection.
 
-There is a known discrepancy in the current state: `RickSQL.Unitarios.Drivers.Test.dpr` expects port `0` for Informix, while `Rick.SQL.Service.FireDAC.Driver.Informix.pas` defines `DefaultPort := 9088` in both the `FULL_EDITION` branch and the fallback branch. This must be resolved before that test is used as evidence of conformance for the Informix provider.
+The legacy suite retains a divergent historical expectation: `RickSQL.Unitarios.Drivers.Test.dpr` expects port `0` for Informix. The current normative contract is in `NewTests/src/Driver/Rick.SQL.Tests.Driver.Contracts.pas` and requires `DefaultPort = 9088`, consistent with both provider branches and the database documentation. The legacy file remains unchanged and must not be used as the quality gate for this contract.
 
 See [Unit tests](TESTES_UNITARIOS.md).
 

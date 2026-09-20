@@ -20,6 +20,7 @@ uses
   Rick.SQL.Tests.Transaction in 'src\Transaction\Rick.SQL.Tests.Transaction.pas',
   Rick.SQL.Tests.ClientLibrary.VendorLibrary in 'src\ClientLibrary\Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas',
   Rick.SQL.Tests.Driver.ProviderReuse in 'src\Driver\Rick.SQL.Tests.Driver.ProviderReuse.pas',
+  Rick.SQL.Tests.Driver.Contracts in 'src\Driver\Rick.SQL.Tests.Driver.Contracts.pas',
   Rick.SQL.Tests.Fluent.Lifecycle in 'src\Facade\Rick.SQL.Tests.Fluent.Lifecycle.pas',
   Rick.SQL.Tests.DataSet.Materializer in 'src\Materialization\Rick.SQL.Tests.DataSet.Materializer.pas';
 
