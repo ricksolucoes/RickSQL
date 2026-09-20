@@ -1,4 +1,4 @@
-unit Rick.SQL.Interf;
+﻿unit Rick.SQL.Interf;
 
 interface
 
@@ -105,6 +105,10 @@ type
 
     function TimeOut(const ATimeOut : Integer) : IRickSQLCommand;
     function Transation(const ATransation : Boolean) : IRickSQLCommand;
+    /// <summary>
+    /// Controla o prefetch explícito antes da materialização; False não implica
+    /// dataset lazy/conectado nem limita os registros retornados.
+    /// </summary>
     function FetchAll(const AFetchAll : Boolean) : IRickSQLCommand;
     function MaxRedord(const AMaxRedord : Integer) : IRickSQLCommand;
 

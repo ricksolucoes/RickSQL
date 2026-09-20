@@ -86,25 +86,30 @@ Sem essa execução:
 
 A regra mínima para qualquer alteração Delphi é não introduzir nova toxicidade e não agravar toxicidade preexistente fora do escopo autorizado.
 
-### Medições reais atuais registradas — 19/09/2026
+### Medições reais atuais registradas — evidência fornecida em 20/09/2026
 
-Em **19/09/2026**, foram fornecidos e analisados dois CSVs exportados pelo RAD Studio **Method Toxicity Metrics**: `Framework.csv`, cujos métodos medidos pertencem a `src`, e `Teste-New.csv`, cujos métodos medidos pertencem a `NewTests`. Como os próprios CSVs não registram edição da IDE, plataforma alvo, configuração de build ou defines condicionais, essas propriedades de ambiente não são inferidas da medição atual.
+Na rodada de **20/09/2026**, foram fornecidos e analisados dois CSVs do RAD Studio **Method Toxicity Metrics**: `RiCKSQL.csv`, cujos métodos medidos pertencem a `src`, e `RickSqlTest.csv`, cujos métodos medidos pertencem a `NewTests`. Os arquivos contêm, respectivamente, **419** e **211** medições de métodos. Como os próprios CSVs não registram data de exportação, edição da IDE, plataforma alvo, configuração de build ou defines condicionais, essas propriedades não são inferidas da medição atual.
 
 | Escopo medido | `Length` máx. | `Parameters` máx. | `If Depth` máx. | `Cyclomatic Complexity` máx. | `Toxicity` máx. |
 |---|---:|---:|---:|---:|---:|
-| produção `src` (`Framework.csv`) | 19 | 5 | 4 | 6 | 0,588 |
-| `NewTests` (`Teste-New.csv`) | 18 | 4 | 1 | 3 | 0,350 |
+| produção `src` (`RiCKSQL.csv`) | 19 | 5 | 4 | 6 | 0,588 |
+| `NewTests` (`RickSqlTest.csv`) | 18 | 4 | 1 | 3 | 0,350 |
 | subconjunto `Rick.SQL.Tests.Fluent.Lifecycle.pas` | 18 | 2 | 1 | 2 | 0,279 |
+| subconjunto `Rick.SQL.Tests.DataSet.Materializer.pas` | 14 | 3 | 0 | 1 | 0,217 |
 
 Considerando os thresholds baseline do projeto (`Length = 20`, `Parameters = 6`, `If Depth = 5`, `Cyclomatic Complexity = 6` e `Toxicity = 1`), nenhum método medido representado nos CSVs fornecidos ultrapassa um threshold. A `Cyclomatic Complexity` de produção alcança o limite baseline 6, mas não o excede. O maior `Toxicity` medido em produção é `0,588`, enquanto em `NewTests` é `0,350`.
 
-`Teste-New.csv` contém **25 métodos medidos** de `NewTests/src/Facade/Rick.SQL.Tests.Fluent.Lifecycle.pas`, incluindo os helpers de lifecycle e seus 17 testes `published`. Nessa unit, o maior `Toxicity` medido é `0,279` (`TDataSetReleaseProbe.Notification`) e o maior `Length` medido é 18 (`OpenOpen_OwnerFalse_DevePreservarDataSetAnterior`). Os dois helpers de isolamento de escopo adicionados no ajuste do teste de destrutor, `OpenOwnedDataSetAndReleaseFacade` e `OpenExternalDataSetAndReleaseFacade`, medem `Toxicity` de `0,133` e `0,146`, respectivamente; ambos possuem um parâmetro, `If Depth = 0` e `Cyclomatic Complexity = 1`. Esta passa a ser evidência real por CSV do Method Toxicity para a unit de lifecycle depois do ajuste, substituindo a limitação anterior de que esses testes possuíam apenas avaliação estática.
+`RickSqlTest.csv` contém **26 métodos medidos** de `NewTests/src/Facade/Rick.SQL.Tests.Fluent.Lifecycle.pas`, incluindo os helpers de lifecycle e seus 17 testes `published`. Nessa unit, o maior `Toxicity` medido é `0,279` (`TDataSetReleaseProbe.Notification`) e o maior `Length` medido é 18 (`OpenOpen_OwnerFalse_DevePreservarDataSetAnterior`). Os dois helpers de isolamento de escopo adicionados no ajuste do teste de destrutor, `OpenOwnedDataSetAndReleaseFacade` e `OpenExternalDataSetAndReleaseFacade`, medem `Toxicity` de `0,133` e `0,146`, respectivamente; ambos possuem um parâmetro, `If Depth = 0` e `Cyclomatic Complexity = 1`.
 
-A execução DUnit atual associada à fonte atualizada é documentada separadamente em [Testes e homologação](../testes/TESTES_E_HOMOLOGACAO.pt-BR.md): 152 testes executados, com 0 falhas, 0 erros e 0 overrides. Evidência de execução e evidência de Method Toxicity permanecem distintas: nenhuma delas é usada para inferir configuração de build que o respectivo artefato não demonstra.
+A nova unit `NewTests/src/Materialization/Rick.SQL.Tests.DataSet.Materializer.pas` possui **8 métodos medidos** em `RickSqlTest.csv`. Seus máximos são `Length = 14`, `Parameters = 3`, `If Depth = 0`, `Cyclomatic Complexity = 1` e `Toxicity = 0,217`; o maior `Toxicity` da unit pertence a `Open_DeveRetornarDataSetUtilAposLiberacaoDaSessaoInterna`. Assim, os seis testes `published` de caracterização de `FetchAll`/materialização possuem evidência real de execução DUnit e evidência real de Method Toxicity no conjunto fornecido.
+
+A execução DUnit atual associada à fonte atualizada é documentada separadamente em [Testes e homologação](../testes/TESTES_E_HOMOLOGACAO.pt-BR.md): 158 testes, todos `PASS`, com 0 falhas, 0 erros e 100% de sucesso. Evidência de execução e evidência de Method Toxicity permanecem distintas: nenhuma delas é usada para inferir configuração de build que o respectivo artefato não demonstra.
+
+A medição CSV anteriormente registrada em 19/09/2026 (`Framework.csv`/`Teste-New.csv`) permanece como evidência histórica anterior à inclusão dos testes de materialização. Ela apresentava os mesmos máximos globais de `Toxicity` (`0,588` em produção e `0,350` em `NewTests`) e já fornecia medição real para a unit de lifecycle.
 
 ### Medição histórica registrada — 19/09/2026 — anterior à classe de lifecycle
 
-A medição anteriormente documentada de `RickSQL.NewTests.dproj`, capturada no **Delphi 12 Community Edition** para **Windows 32-bit**, mostrava maior `Toxicity` visível de `0,350`, `Length` visível até 14, `Parameters` até 4, `If Depth` até 1 e `Cyclomatic Complexity` até 3. Essa captura antecedia `TRickSQLFluentLifecycleTests`. Ela permanece útil como evidência histórica, mas a medição atual de `Teste-New.csv` acima agora cobre independentemente a unit de lifecycle e mantém o mesmo maior `Toxicity` global de `0,350`.
+A medição anteriormente documentada de `RickSQL.NewTests.dproj`, capturada no **Delphi 12 Community Edition** para **Windows 32-bit**, mostrava maior `Toxicity` visível de `0,350`, `Length` visível até 14, `Parameters` até 4, `If Depth` até 1 e `Cyclomatic Complexity` até 3. Essa captura antecedia `TRickSQLFluentLifecycleTests`. Ela permanece útil como evidência histórica, mas a medição atual de `RickSqlTest.csv` acima cobre independentemente a unit de lifecycle e mantém o mesmo maior `Toxicity` global de `0,350`.
 
 ### Medição histórica registrada — 18/09/2026
 

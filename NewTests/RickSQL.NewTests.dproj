@@ -128,6 +128,7 @@
         <DCCReference Include="src\ClientLibrary\Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas"/>
         <DCCReference Include="src\Driver\Rick.SQL.Tests.Driver.ProviderReuse.pas"/>
         <DCCReference Include="src\Facade\Rick.SQL.Tests.Fluent.Lifecycle.pas"/>
+        <DCCReference Include="src\Materialization\Rick.SQL.Tests.DataSet.Materializer.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

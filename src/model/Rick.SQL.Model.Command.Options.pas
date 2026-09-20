@@ -15,7 +15,18 @@ type
   TRickSQLCommandOptions = record
     CommandTimeout: Integer;
     UseTransaction: Boolean;
+    /// <summary>
+    /// Solicita o prefetch explícito do dataset de origem antes da materialização
+    /// quando não existe limite positivo em MaxRecords.
+    /// </summary>
+    /// <remarks>
+    /// False apenas omite o prefetch explícito: não torna o resultado lazy ou
+    /// conectado e não limita linhas. MaxRecords controla a quantidade materializada.
+    /// </remarks>
     FetchAll: Boolean;
+    /// <summary>
+    /// Limita a quantidade de registros materializados; zero significa sem limite.
+    /// </summary>
     MaxRecords: Integer;
     Materialization: TRickSQLMaterializationOptions;
     class function CreateDefault: TRickSQLCommandOptions; static;

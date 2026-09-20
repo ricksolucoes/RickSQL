@@ -165,11 +165,11 @@ LCommand.AddParameter(TRickSQLParameter.Create('NOME', LNome));
 |---|---|---|
 | `CommandTimeout` | `0` | tempo limite do comando; zero usa o padrão do driver |
 | `UseTransaction` | `True` | indica se `Execute` deve envolver o comando em uma transação |
-| `FetchAll` | `True` | quando `True` e `MaxRecords <= 0`, tenta chamar `FetchAll` no dataset de origem via RTTI antes da cópia; quando `False`, essa pré-busca explícita é omitida |
+| `FetchAll` | `True` | quando `True` e `MaxRecords <= 0`, solicita ao dataset de origem que conclua explicitamente o fetch antes da cópia, quando esse recurso está disponível; quando `False`, essa solicitação de pré-fetch é omitida |
 | `MaxRecords` | `0` | quantidade máxima de registros; zero significa sem limite |
 | `Materialization.PositionAtFirstRecord` | `True` | posiciona o dataset materializado no primeiro registro |
 | `Materialization.PreserveFieldMetadata` | `True` | quando `True`, copia para os campos materializados metadados de apresentação/validação disponíveis no dataset de origem (`Alignment`, `DisplayLabel`, `DisplayWidth`, `Visible`, `EditMask`, `Required` e `DisplayFormat` de campos numéricos) |
 
 Esses campos podem ser ajustados diretamente antes de chamar `Open` ou `Execute`, por exemplo: `LCommand.Options.CommandTimeout := 30;`.
 
-`FetchAll := False` não define um limite de registros. A materialização continua percorrendo o dataset de origem até `Eof`, salvo quando `MaxRecords > 0`; a diferença é que a chamada explícita ao método `FetchAll` do dataset de origem é evitada. `PreserveFieldMetadata := False` também não elimina a estrutura de campos (`FieldDefs`) necessária ao `TFDMemTable`; ele apenas deixa de copiar os metadados adicionais listados acima.
+`FetchAll := False` não define um limite de registros, não ativa leitura lazy/streaming e não mantém a query conectada. A materialização continua percorrendo o dataset de origem até `Eof`, salvo quando `MaxRecords > 0`; a diferença é apenas a ausência da solicitação explícita de pré-fetch antes da cópia. Quando `MaxRecords > 0`, esse pré-fetch explícito não é solicitado independentemente de `FetchAll`, e `MaxRecords` é quem limita a quantidade de registros materializados. O resultado de `Open` continua sendo um dataset em memória independente da query, da conexão e da sessão de origem. `PreserveFieldMetadata := False` também não elimina a estrutura de campos (`FieldDefs`) necessária ao `TFDMemTable`; ele apenas deixa de copiar os metadados adicionais listados acima.

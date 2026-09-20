@@ -25,6 +25,8 @@ NewTests/
     │   └── Rick.SQL.Tests.FireDAC.WaitProvider.pas
     ├── Facade/
     │   └── Rick.SQL.Tests.Fluent.Lifecycle.pas
+    ├── Materialization/
+    │   └── Rick.SQL.Tests.DataSet.Materializer.pas
     ├── Transaction/
     │   └── Rick.SQL.Tests.Transaction.pas
     └── Validation/
@@ -33,7 +35,7 @@ NewTests/
 
 The `RickSQL.NewTests` project consumes the production implementation under `../src` and does not structurally depend on `tests/`.
 
-The current source suite registers **152 DUnit tests across eight classes**, including `TRickSQLFluentLifecycleTests` under `NewTests/src/Facade/`. The latest supplied DUnit GUI Test Runner evidence, dated **2026-09-19**, executed **152/152**, with **0 failures**, **0 errors**, and **0 overrides**, matching the current source count. The previous **135/135** Delphi 12 Community Edition/Windows 32-bit build-and-run evidence is retained as historical validation and is not used as proof of the current build configuration. Details and evidence boundaries are documented in [Tests and validation](TESTES_E_HOMOLOGACAO.md).
+The current source suite registers **158 DUnit tests across nine classes**, including `TRickSQLFluentLifecycleTests` under `NewTests/src/Facade/` and `TRickSQLDataSetMaterializerTests` under `NewTests/src/Materialization/`. The latest supplied DUnit GUI Test Runner evidence, finished at **2026-09-20 10:13:44**, records **158 tests**, all `PASS`, with **0 failures**, **0 errors**, and a **100% success rate**, matching the current source count. The **152/152** run from 2026-09-19 and the previous **135/135** Delphi 12 Community Edition/Windows 32-bit build-and-run evidence are retained as historical validation and are not used as proof of the current build configuration. Details and evidence boundaries are documented in [Tests and validation](TESTES_E_HOMOLOGACAO.md).
 
 Detailed documentation for the legacy suite remains separated by purpose:
 
