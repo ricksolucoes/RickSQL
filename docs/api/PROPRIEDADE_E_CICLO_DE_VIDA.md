@@ -1,4 +1,4 @@
-# Ownership and Lifetime
+﻿# Ownership and Lifetime
 
 > [Back to the documentation index](../README.md)
 
@@ -135,15 +135,10 @@ No transaction should remain open after a command finishes. After calling FireDA
 
 `TRickSQLServiceFireDACTransaction.Active` keeps its historical Boolean contract for compatibility, including returning `False` when state inspection raises an exception. The internal `Start`, `Commit`, `Rollback`, and `RollbackAfterFailure` flows do not depend on that ambiguous behavior.
 
-## Memory
+## Memory and lifecycle
 
-The memory tests under `tests/memoria` exercise:
+The official suite no longer has a separate `tests/memoria` directory. Lifetime/ownership contracts are consolidated into their corresponding classes under `tests/src/`: fluent lifecycle, materialization, FireDAC services, drivers/client library, and transactions.
 
-- repeated session creation and destruction;
-- materialization and release of the dataset returned by `Open`;
-- dynamically growing parameter arrays (`TRickSQLParameterArray`);
-- internal errors converted into `TRickSQLError`;
-- transactions (start, commit, and rollback);
-- driver link and driver context.
+Functional coverage validates session creation/release, independent materialized datasets, fluent ownership, driver context/link lifetime, and transaction cleanup. **No memory-leak detection tool was run in this task**; therefore no leak-free claim is made.
 
-See [`TESTES_E_HOMOLOGACAO.md`](../testes/TESTES_E_HOMOLOGACAO.md) for details of the available test scenarios.
+See [Tests and validation](../testes/TESTES_E_HOMOLOGACAO.md) and [Lifecycle, ownership, and memory](../testes/TESTES_DE_MEMORIA.md).

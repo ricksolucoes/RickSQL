@@ -1,60 +1,32 @@
-# Documentação do RickSQL
+﻿# Documentação do RickSQL
 
-Este diretório é a fonte canônica da documentação técnica do projeto. A implementação em `src/` continua sendo a fonte primária para comportamento; `NewTests/`, `tests/` e `samples/` complementam essa leitura com cobertura oficial de novas refatorações, contratos legados e exemplos executáveis.
+Este diretório é a fonte canônica da documentação técnica do projeto. O código em `src/` continua sendo a autoridade primária sobre comportamento; `tests/` é a única suíte oficial de testes; `samples/` contém exemplos executáveis.
 
-> [Voltar ao README principal](../README.pt-BR.md)
+## Índice
 
-Os documentos em português do Brasil usam o sufixo `.pt-BR.md`. As versões em inglês preservam o mesmo nome-base sem esse sufixo.
-
-## Integração
-
-| Documento | Conteúdo |
+| Área | Documento |
 |---|---|
-| [Guia de integração](integracao/GUIA_DE_INTEGRACAO.pt-BR.md) | estrutura do projeto, Library/Search Path, diretivas e fluxo de uso |
-| [Exemplos de uso](integracao/EXEMPLOS_DE_USO.pt-BR.md) | exemplos `Interface`, console, FMX e serviço Windows existentes em `samples/` |
+| Integração | [Guia de integração](integracao/GUIA_DE_INTEGRACAO.pt-BR.md) |
+| Exemplos | [Exemplos de uso](integracao/EXEMPLOS_DE_USO.pt-BR.md) |
+| API pública | [API pública](api/API_PUBLICA.pt-BR.md) |
+| Conexão | [Opções de conexão](api/OPCOES_DE_CONEXAO.pt-BR.md) |
+| Comandos | [Comandos e parâmetros](api/COMANDOS_E_PARAMETROS.pt-BR.md) |
+| Ownership/lifetime | [Propriedade e ciclo de vida](api/PROPRIEDADE_E_CICLO_DE_VIDA.pt-BR.md) |
+| Erros | [Tratamento de erros](api/TRATAMENTO_DE_ERROS.pt-BR.md) |
+| Bancos | [Bancos suportados](bancos/BANCOS_SUPORTADOS.pt-BR.md) |
+| Client libraries | [Bibliotecas clientes](bancos/BIBLIOTECAS_CLIENTE.pt-BR.md) |
+| Arquitetura | [Arquitetura confirmada](engenharia/ARQUITETURA.pt-BR.md) |
+| Qualidade | [Controle de toxicidade](engenharia/CONTROLE_DE_TOXICIDADE.pt-BR.md) |
+| Testes | [Suíte oficial](testes/README.pt-BR.md) |
+| Homologação | [Testes e homologação](testes/TESTES_E_HOMOLOGACAO.pt-BR.md) |
+| Cobertura | [Matriz de cobertura](testes/MATRIZ_DE_COBERTURA.pt-BR.md) |
 
-## API
+## Estado da suíte oficial
 
-| Documento | Conteúdo |
-|---|---|
-| [API pública](api/API_PUBLICA.pt-BR.md) | `TRickSQL`, `TRickSQLInterf` e interfaces fluentes |
-| [Opções de conexão](api/OPCOES_DE_CONEXAO.pt-BR.md) | `TRickSQLConnectionOptions`, defaults, validações e parâmetros adicionais |
-| [Comandos e parâmetros](api/COMANDOS_E_PARAMETROS.pt-BR.md) | criação de comandos, parâmetros, `Open`, `Execute` e opções de execução |
-| [Propriedade e ciclo de vida](api/PROPRIEDADE_E_CICLO_DE_VIDA.pt-BR.md) | ownership, materialização, sessão interna e transações |
-| [Tratamento de erros](api/TRATAMENTO_DE_ERROS.pt-BR.md) | `TRickSQLError`, categorias, `DBMSCode`, `SQLState` e mascaramento de credenciais |
+A suíte oficial reside exclusivamente em `tests/`. O projeto Delphi é `tests/RickSQL.Tests.dproj`, com `MainSource` `RickSQL.Tests.dpr`. O runner usa DUnit GUI e, após o fechamento da janela, executa novamente os testes para gerar `dunitx-results.xml`, exceto com `/noxml`.
 
-## Bancos de dados
+A evidência pós-migração fornecida em 20/09/2026 registra 217 testes, 0 failures e 0 errors no branch sem `FULL_EDITION`. Testes de infraestrutura externa são condicionais e não devem ser interpretados como executados apenas porque a suíte global terminou verde.
 
-| Documento | Conteúdo |
-|---|---|
-| [Bancos suportados](bancos/BANCOS_SUPORTADOS.pt-BR.md) | providers, `DriverID`, portas, requisitos e regras específicas |
-| [Bibliotecas clientes](bancos/BIBLIOTECAS_CLIENTE.pt-BR.md) | resolução de DLLs, ordem de procura e comportamento por arquitetura |
+## Regra de autoridade
 
-## Testes e homologação
-
-| Documento | Conteúdo |
-|---|---|
-| [Visão geral de testes e homologação](testes/TESTES_E_HOMOLOGACAO.pt-BR.md) | suíte oficial `NewTests`, suíte legada `tests`, resultados registrados e critérios de aceite |
-| [Testes de compilação](testes/TESTES_DE_COMPILACAO.pt-BR.md) | 18 projetos de contrato/compilação existentes |
-| [Testes unitários](testes/TESTES_UNITARIOS.pt-BR.md) | projetos isolados de models, validadores, drivers e erros |
-| [Testes de integração](testes/TESTES_DE_INTEGRACAO.pt-BR.md) | projetos SQLite, Firebird, PostgreSQL, SQL Server, ODBC e infraestrutura |
-| [Configuração do ambiente](testes/CONFIGURACAO_AMBIENTE.pt-BR.md) | Library Path, variáveis e requisitos dos testes externos |
-| [Testes de memória](testes/TESTES_DE_MEMORIA.pt-BR.md) | cenários com `ReportMemoryLeaksOnShutdown` |
-| [Testes de concorrência](testes/TESTES_DE_CONCORRENCIA.pt-BR.md) | cenários simultâneos e isolamento de falhas |
-
-## Engenharia
-
-| Documento | Conteúdo |
-|---|---|
-| [Controle de toxicidade](engenharia/CONTROLE_DE_TOXICIDADE.pt-BR.md) | regras de qualidade, responsabilidades e checklist de revisão |
-
-## Organização documental
-
-- O `README.md` da raiz é a landing page padrão do repositório em inglês; `README.pt-BR.md` contém a versão equivalente em português do Brasil.
-- `docs/` contém a documentação técnica detalhada.
-- `samples/` contém somente os projetos de exemplo.
-- `NewTests/` contém a suíte oficial DUnit com GUI Test Runner para novas refatorações e correções comportamentais.
-- `tests/` contém a suíte legada e seus artefatos de teste.
-- `LICENSE` e `LICENSE-pt-BR` permanecem na raiz por serem documentos normativos de licenciamento.
-
-A documentação não deve declarar compilação, aprovação de testes, ausência de leaks ou conformidade de métricas sem evidência real da ferramenta correspondente.
+Quando documentação e implementação divergirem, use nesta ordem: requisito vigente, código atual, configuração atual e testes que representem contrato válido. Informações que dependam de ambiente externo ou ferramenta não executada devem permanecer identificadas como **Não confirmado**.

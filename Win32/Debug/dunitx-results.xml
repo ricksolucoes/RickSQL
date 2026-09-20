@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="yes" ?>
+<TestRun>
+<TestSuite name="RickSQL.Tests.exe">
+<TestSuite name="TRickSQLErrorIntegrationTests">
+<Test name="DriverContext_Exception_UsesSharedNormalization" result="PASS">
+</Test>
+<Test name="Connection_Exception_UsesSharedNormalization" result="PASS">
+</Test>
+<Test name="QueryPrepare_Exception_UsesSharedNormalization" result="PASS">
+</Test>
+<Test name="Session_InvalidContext_UsesSharedNormalization" result="PASS">
+</Test>
+<Test name="ParameterBinder_InvalidSetup_UsesSharedNormalization" result="PASS">
+</Test>
+<Test name="Transaction_MissingConnection_UsesSharedNormalization" result="PASS">
+</Test>
+<Test name="DataSetMaterializer_Exception_UsesSharedNormalization" result="PASS">
+</Test>
+<Test name="ClientLibraryResolver_SanitizesPublicErrorSurfaces" result="PASS">
+</Test>
+</TestSuite>
+<TestSuite name="TRickSQLErrorNormalizerTests">
+<Test name="GenericException_PreservesContextAndSanitizesTechnicalDetail" result="PASS">
+</Test>
+<Test name="SensitiveKeys_AreMaskedInMessageAndTechnicalDetail" result="PASS">
+</Test>
+<Test name="CoreParser_UsesSharedNormalizationPolicy" result="PASS">
+</Test>
+<Test name="CoreParser_FromMessage_PreservesLegacyContract" result="PASS">
+</Test>
+<Test name="FireDACException_PreservesStructuredDBMSInformation" result="PASS">
+</Test>
+<Test name="SQLiteException_PreservesDBMSCodeProvidedByFireDAC" result="PASS">
+</Test>
+</TestSuite>
+<TestSuite name="TRickSQLFireDACWaitProviderTests">
+<Test name="VCL_DeveRegistrarProviderDeEsperaDoFireDAC" result="PASS">
+</Test>
+</TestSuite>
+<TestSuite name="TRickSQLParameterValidatorTests">
+<Test name="TodosEngines_ParametroSimples_DeveSerReconhecido" result="PASS">
+</Test>
+<Test name="TodosEngines_ParametroAposKeyword_DeveSerReconhecido" result="PASS">
+</Test>
+<Test name="ParametroSimplesAusente_DeveFalhar" result="PASS">
+</Test>
+<Test name="MultiplosParametros_DevemSerReconhecidos" result="PASS">
+</Test>
+<Test name="ParametroRepetido_DeveAceitarUmaUnicaDefinicao" result="PASS">
+</Test>
+<Test name="NomeDeParametro_DeveSerCaseInsensitive" result="PASS">
+</Test>
+<Test name="ParametroExtra_DevePreservarContratoDoValidadorCore" result="PASS">
+</Test>
+<Test name="StringComDoisPontos_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="StringComAspasEscapadas_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="IdentificadorComAspasDuplas_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="ComentarioDeLinha_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="ComentarioDeBloco_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="PostgreSQL_TypeCast_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="PostgreSQL_DollarQuote_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="PostgreSQL_DollarQuoteSemTag_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="PostgreSQL_EscapeString_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="PostgreSQL_ComentarioDeBlocoAninhado_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="PostgreSQL_DollarQuote_DevePreservarParametroRealExterno" result="PASS">
+</Test>
+<Test name="PostgreSQL_ArraySlice_NaoDeveOcultarParametroReal" result="PASS">
+</Test>
+<Test name="PostgreSQL_ArraySliceSemLimiteInferior_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="PostgreSQL_ParametroEmSubscrito_DeveSerReconhecido" result="PASS">
+</Test>
+<Test name="PostgreSQL_ParametroAposEspaco_DeveSerReconhecido" result="PASS">
+</Test>
+<Test name="Firebird_QQuote_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="Firebird_ArrayComLimitesExplicitos_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="Firebird_ArrayElement_ComParametro_DeveReconhecerParametro" result="PASS">
+</Test>
+<Test name="Firebird_LabelPSQL_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="Firebird_ExecuteBlock_VariavelPSQL_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="Firebird_ExecuteBlock_ParametroExterno_DeveSerReconhecido" result="PASS">
+</Test>
+<Test name="Firebird_StoredProcedure_VariavelPSQL_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="InterBase_StoredProcedure_VariavelPSQL_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="InterBase_ArraySlice_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="SQLServer_IdentificadorComColchetes_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="SQLServer_Label_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="SQLServer_ParametroAdjacenteAKeyword_DeveSerReconhecido" result="PASS">
+</Test>
+<Test name="SQLServer_JSONObject_SeparadorColon_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="SQLServer_JSONObject_ParametroNoValor_DeveSerReconhecido" result="PASS">
+</Test>
+<Test name="SQLServer_JSONObject_ParametroEmExpressao_DeveSerReconhecido" result="PASS">
+</Test>
+<Test name="SQLServer_JSONObject_Aninhado_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="SQLServer_JSONObject_Aninhado_DevePreservarParametroReal" result="PASS">
+</Test>
+<Test name="SQLServer_ComentarioDeBlocoAninhado_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="MySQL_IdentificadorComBacktick_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="MySQL_StringComEscapeBackslash_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="MySQL_ComentarioHash_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="MySQL_DoisHifensSemEspaco_NaoDevemOcultarParametroReal" result="PASS">
+</Test>
+<Test name="MySQL_DoisHifensComEspaco_DevemIniciarComentario" result="PASS">
+</Test>
+<Test name="MySQL_Label_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="MySQL_ParametroAdjacenteAKeyword_DeveSerReconhecido" result="PASS">
+</Test>
+<Test name="SQLite_IdentificadorComColchetes_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="SQLite_IdentificadorComBacktick_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="Oracle_QQuote_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="Oracle_NQQuote_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="Oracle_AtribuicaoPLSQL_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="Oracle_JSONObject_SeparadorColon_NaoDeveOcultarParametroReal" result="PASS">
+</Test>
+<Test name="Oracle_JSONObject_ParametroNoValor_DeveSerReconhecido" result="PASS">
+</Test>
+<Test name="Oracle_JSONObject_ParametrosNaChaveEValor_DevemSerReconhecidos" result="PASS">
+</Test>
+<Test name="Oracle_JSONObject_ParametroEmExpressao_DeveSerReconhecido" result="PASS">
+</Test>
+<Test name="Oracle_Trigger_Pseudoregistros_NaoDevemCriarParametros" result="PASS">
+</Test>
+<Test name="DB2_Label_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="DB2_ParametroAdjacenteAKeyword_DeveSerReconhecido" result="PASS">
+</Test>
+<Test name="SQLAnywhere_IdentificadorComColchetes_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="SQLAnywhere_Label_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="SQLAnywhere_ParametroAdjacenteAKeyword_DeveSerReconhecido" result="PASS">
+</Test>
+<Test name="SQLAnywhere_ComentarioDeBlocoAninhado_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="SQLAnywhere_ComentarioDoubleSlash_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="Informix_SeparadorDeCatalogo_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="Informix_SeparadorDeCatalogoRemoto_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="Informix_QualificacaoDeColuna_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="Informix_ParametroAdjacenteAKeyword_DeveSerReconhecido" result="PASS">
+</Test>
+<Test name="Access_IdentificadorComColchetes_NaoDeveCriarParametro" result="PASS">
+</Test>
+<Test name="Access_LiteralDataHora_NaoDeveCriarParametro" result="PASS">
+</Test>
+</TestSuite>
+<TestSuite name="TRickSQLTransactionTests">
+<Test name="Active_TransacaoAtiva_DeveRetornarTrue" result="PASS">
+</Test>
+<Test name="Active_TransacaoInativa_DeveRetornarFalse" result="PASS">
+</Test>
+<Test name="Active_ConexaoNil_DevePreservarContratoFalse" result="PASS">
+</Test>
+<Test name="Active_FalhaDeInspecao_DevePreservarContratoFalse" result="PASS">
+</Test>
+<Test name="Start_TransacaoAtiva_DevePreservarComportamentoAtual" result="PASS">
+</Test>
+<Test name="Start_TransacaoInativa_DeveIniciar" result="PASS">
+</Test>
+<Test name="Start_FalhaAoConsultarEstado_NaoDeveRetornarSucesso" result="PASS">
+</Test>
+<Test name="Start_FalhaNaInspecaoAposInicio_DeveReportarErro" result="PASS">
+</Test>
+<Test name="Start_ExceptionDuranteStart_DeveReportarErro" result="PASS">
+</Test>
+<Test name="Commit_TransacaoAtiva_DeveFinalizar" result="PASS">
+</Test>
+<Test name="Commit_TransacaoInativa_DevePreservarComportamentoAtual" result="PASS">
+</Test>
+<Test name="Commit_FalhaAoConsultarEstado_NaoDeveRetornarSucesso" result="PASS">
+</Test>
+<Test name="Commit_FalhaNaInspecaoAposCommit_DeveReportarErro" result="PASS">
+</Test>
+<Test name="Commit_ExceptionDuranteCommit_DeveReportarErro" result="PASS">
+</Test>
+<Test name="Rollback_TransacaoAtiva_DeveFinalizar" result="PASS">
+</Test>
+<Test name="Rollback_TransacaoInativa_DevePreservarComportamentoAtual" result="PASS">
+</Test>
+<Test name="Rollback_FalhaAoConsultarEstado_NaoDeveRetornarSucesso" result="PASS">
+</Test>
+<Test name="Rollback_FalhaNaInspecaoAposRollback_DeveReportarErro" result="PASS">
+</Test>
+<Test name="Rollback_ExceptionDuranteRollback_DeveReportarErro" result="PASS">
+</Test>
+<Test name="RollbackAfterFailure_TransacaoAtiva_DevePreservarErroPrimario" result="PASS">
+</Test>
+<Test name="RollbackAfterFailure_TransacaoInativa_DevePreservarErroPrimario" result="PASS">
+</Test>
+<Test name="RollbackAfterFailure_FalhaNaInspecao_NaoDeveDescartarDiagnostico" result="PASS">
+</Test>
+<Test name="RollbackAfterFailure_FalhaNoRollback_NaoDeveDescartarDiagnostico" result="PASS">
+</Test>
+<Test name="UseTransactionFalse_NaoDeveIntroduzirErroTransacional" result="PASS">
+</Test>
+</TestSuite>
+<TestSuite name="TRickSQLVendorLibraryTests">
+<Test name="Canonical_CompatibleDriverLink_AssignsVendorLib" result="PASS">
+</Test>
+<Test name="Canonical_EmptyPath_PreservesExistingVendorLib" result="PASS">
+</Test>
+<Test name="Canonical_MissingVendorLib_ReportsUnavailable" result="PASS">
+</Test>
+<Test name="Canonical_SetterFailure_ReportsFailure" result="PASS">
+</Test>
+<Test name="Configure_ExplicitPath_AssignsResolvedVendorLib" result="PASS">
+</Test>
+<Test name="Configure_NotRequired_DoesNotRequireVendorLib" result="PASS">
+</Test>
+<Test name="Resolve_ArchitectureMismatch_ReturnsStructuredError" result="PASS">
+</Test>
+<Test name="Configure_SetterFailure_PreservesClientLibraryError" result="PASS">
+</Test>
+<Test name="DriverContext_ResolvedPath_AssignsVendorLib" result="PASS">
+</Test>
+<Test name="DriverContextFactory_ExplicitPath_AssignsVendorLib" result="PASS">
+</Test>
+<Test name="DriverContext_EmptyPath_PreservesExistingVendorLib" result="PASS">
+</Test>
+<Test name="DriverContext_SetterFailure_PreservesDriverError" result="PASS">
+</Test>
+<Test name="Configure_MissingVendorLib_PreservesClientLibraryError" result="PASS">
+</Test>
+<Test name="DriverContext_MissingVendorLib_PreservesDriverError" result="PASS">
+</Test>
+<Test name="ConfigureAndContext_SamePath_ProduceSameVendorLib" result="PASS">
+</Test>
+<Test name="ProviderDefault_InterBase_PreservesVendorLib" result="PASS">
+</Test>
+</TestSuite>
+<TestSuite name="TRickSQLDriverProviderReuseTests">
+<Test name="Factory_SQLite_ProviderAndDefinitionCorrespond" result="PASS">
+</Test>
+<Test name="ConnectionValidator_Compatibility_ValidatesSQLite" result="PASS">
+</Test>
+<Test name="ConnectionValidator_ProviderOverload_ReturnsResolvedProvider" result="PASS">
+</Test>
+<Test name="CommandValidator_ProviderOverload_ReturnsResolvedProvider" result="PASS">
+</Test>
+<Test name="ClientLibraryResolver_Compatibility_SQLiteDoesNotRequireLibrary" result="PASS">
+</Test>
+<Test name="ClientLibraryResolver_ProvidedProvider_ObtainsDefinitionOnce" result="PASS">
+</Test>
+<Test name="DriverContextFactory_Compatibility_CreatesSQLiteContext" result="PASS">
+</Test>
+<Test name="DriverContextFactory_ProvidedProvider_ReusesSameInstance" result="PASS">
+</Test>
+<Test name="IndependentOperations_ResolveDistinctProviders" result="PASS">
+</Test>
+<Test name="Execute_SQLite_TemporaryDatabase_Succeeds" result="PASS">
+</Test>
+<Test name="Open_SQLite_TemporaryDatabase_ReturnsDataset" result="PASS">
+</Test>
+</TestSuite>
+<TestSuite name="TRickSQLDriverContractTests">
+<Test name="Factory_Unknown_ReturnsNil" result="PASS">
+</Test>
+<Test name="Factory_SupportedEngines_ResolveProviders" result="PASS">
+</Test>
+<Test name="Definitions_AllEngines_ExposeExpectedContract" result="PASS">
+</Test>
+<Test name="Providers_OperationalBranch_AppliesExpectedDriverID" result="PASS">
+</Test>
+<Test name="OperationalDrivers_CreateDriverLinkOwnedByCaller" result="PASS">
+</Test>
+<Test name="Informix_Definition_ExposesExpectedContract" result="PASS">
+</Test>
+<Test name="Informix_Fallback_ValidateOptionsRejectsUse" result="PASS">
+</Test>
+<Test name="FallbackDrivers_WithoutFullEdition_RejectFunctionalUse" result="PASS">
+</Test>
+<Test name="Informix_Fallback_CreateDriverLinkRaisesFullEditionRequired" result="PASS">
+</Test>
+</TestSuite>
+<TestSuite name="TRickSQLFluentLifecycleTests">
+<Test name="EstadoInicial_DeveExporResultadoNeutro" result="PASS">
+</Test>
+<Test name="EstadoInicial_OpenDeveUsarDefaultsDeMaterializacao" result="PASS">
+</Test>
+<Test name="SQL_NaoDeveLimparParametrosConsolidados" result="PASS">
+</Test>
+<Test name="Clear_DeveRemoverParametrosConsolidados" result="PASS">
+</Test>
+<Test name="Clear_NaoDeveResetarParametroEmConstrucao" result="PASS">
+</Test>
+<Test name="CommandOptions_DevemPersistirEntreOpen" result="PASS">
+</Test>
+<Test name="MaterializationOptions_DevemPersistirEntreOpen" result="PASS">
+</Test>
+<Test name="Error_DeveSerReiniciadoAntesDaProximaOperacao" result="PASS">
+</Test>
+<Test name="OpenOpen_OwnerTrue_DeveLiberarDataSetAnterior" result="PASS">
+</Test>
+<Test name="OpenOpen_OwnerFalse_DevePreservarDataSetAnterior" result="PASS">
+</Test>
+<Test name="OpenExecute_OwnerTrue_DeveInvalidarDataSetAnterior" result="PASS">
+</Test>
+<Test name="OpenExecute_OwnerFalse_DeveManterDataSetAnteriorReferenciado" result="PASS">
+</Test>
+<Test name="ExecuteExecute_DeveManterDataSetNil" result="PASS">
+</Test>
+<Test name="ExecuteOpen_DeveProduzirNovoDataSet" result="PASS">
+</Test>
+<Test name="Destructor_OwnerTrue_DeveLiberarDataSet" result="PASS">
+</Test>
+<Test name="Destructor_OwnerFalse_NaoDeveLiberarDataSet" result="PASS">
+</Test>
+<Test name="NovaInstancia_NaoDeveCompartilharParametros" result="PASS">
+</Test>
+</TestSuite>
+<TestSuite name="TRickSQLDataSetMaterializerTests">
+<Test name="CommandOptions_DefaultFetchAll_DeveSerTrue" result="PASS">
+</Test>
+<Test name="FetchAllTrue_MaxRecordsZero_DeveExecutarPrefetchEMaterializarTodos" result="PASS">
+</Test>
+<Test name="FetchAllFalse_MaxRecordsZero_DeveOmitirPrefetchEMaterializarTodos" result="PASS">
+</Test>
+<Test name="FetchAllTrue_MaxRecordsLimitado_DeveOmitirPrefetchERespeitarLimite" result="PASS">
+</Test>
+<Test name="FetchAllFalse_MaxRecordsLimitado_DeveOmitirPrefetchERespeitarLimite" result="PASS">
+</Test>
+<Test name="Open_DeveRetornarDataSetUtilAposLiberacaoDaSessaoInterna" result="PASS">
+</Test>
+</TestSuite>
+<TestSuite name="TRickSQLModelTests">
+<Test name="ConnectionOptions_Defaults_AreStable" result="PASS">
+</Test>
+<Test name="ConnectionOptions_AddExtraParameter_AddsValue" result="PASS">
+</Test>
+<Test name="ConnectionOptions_DuplicateExtraParameter_ReplacesValue" result="PASS">
+</Test>
+<Test name="CommandOptions_Defaults_AreStable" result="PASS">
+</Test>
+<Test name="MaterializationOptions_Defaults_AreStable" result="PASS">
+</Test>
+<Test name="Parameter_Create_PreservesValueContract" result="PASS">
+</Test>
+<Test name="Parameter_CreateNull_PreservesNullContract" result="PASS">
+</Test>
+<Test name="Command_AddParameter_AppendsParameter" result="PASS">
+</Test>
+<Test name="Command_ManyParameters_PreservesArray" result="PASS">
+</Test>
+<Test name="Error_EmptyAndCreate_PreserveContract" result="PASS">
+</Test>
+<Test name="ExecutionResult_SuccessAndFailure_PreserveContract" result="PASS">
+</Test>
+<Test name="DriverDefinition_AddLibraryAndRequires_PreserveContract" result="PASS">
+</Test>
+</TestSuite>
+<TestSuite name="TRickSQLCommandConnectionValidatorTests">
+<Test name="Connection_SQLiteConfigured_IsValid" result="PASS">
+</Test>
+<Test name="Connection_WithoutData_Fails" result="PASS">
+</Test>
+<Test name="Connection_NegativeTimeout_Fails" result="PASS">
+</Test>
+<Test name="Connection_InvalidPort_Fails" result="PASS">
+</Test>
+<Test name="Connection_ReservedExtraParameter_Fails" result="PASS">
+</Test>
+<Test name="Connection_DuplicateExtraParameter_Fails" result="PASS">
+</Test>
+<Test name="Connection_WildcardClientLibrary_Fails" result="PASS">
+</Test>
+<Test name="Command_Configured_IsValid" result="PASS">
+</Test>
+<Test name="Command_EmptySQL_Fails" result="PASS">
+</Test>
+<Test name="Command_NegativeTimeout_Fails" result="PASS">
+</Test>
+<Test name="Command_NegativeMaxRecords_Fails" result="PASS">
+</Test>
+</TestSuite>
+<TestSuite name="TRickSQLFireDACServiceTests">
+<Test name="Session_SQLiteContext_CreatesReadyResources" result="PASS">
+</Test>
+<Test name="Session_NilContext_ReportsStructuredError" result="PASS">
+</Test>
+<Test name="Connection_ConfigureSQLite_AppliesExpectedParameters" result="PASS">
+</Test>
+<Test name="Connection_OpenAndCloseSQLite_ChangesConnectedState" result="PASS">
+</Test>
+<Test name="Query_Configure_AssignsConnectionSQLAndTimeout" result="PASS">
+</Test>
+<Test name="Query_PrepareSQLite_Succeeds" result="PASS">
+</Test>
+<Test name="ParameterBinder_Value_AppliesMetadataAndValue" result="PASS">
+</Test>
+<Test name="ParameterBinder_MissingParameter_ReportsError" result="PASS">
+</Test>
+</TestSuite>
+<TestSuite name="TRickSQLSQLiteIntegrationTests">
+<Test name="Execute_InsertUpdateDelete_ReportsRowsAffected" result="PASS">
+</Test>
+<Test name="Execute_ZeroRowsAffected_ReturnsZero" result="PASS">
+</Test>
+<Test name="Open_WithParameter_ReturnsMaterializedRow" result="PASS">
+</Test>
+<Test name="Open_MixedTypes_ExposesExpectedFields" result="PASS">
+</Test>
+<Test name="Open_EmptyResult_ReturnsActiveEmptyDataSet" result="PASS">
+</Test>
+<Test name="Open_MissingParameter_ReturnsValidationError" result="PASS">
+</Test>
+<Test name="Execute_EmptySQL_ReturnsValidationError" result="PASS">
+</Test>
+<Test name="Open_EmptySQL_ReturnsValidationError" result="PASS">
+</Test>
+<Test name="Execute_InvalidSQL_ReturnsStructuredError" result="PASS">
+</Test>
+<Test name="Execute_MissingDirectory_ReturnsStructuredError" result="PASS">
+</Test>
+</TestSuite>
+<TestSuite name="TRickSQLExternalIntegrationTests">
+<Test name="Firebird_WhenConfigured_CRUDAndOpenSucceed" result="PASS">
+</Test>
+<Test name="PostgreSQL_WhenConfigured_CRUDAndOpenSucceed" result="PASS">
+</Test>
+<Test name="PostgreSQL_WhenConfigured_InvalidCredentialReturnsError" result="PASS">
+</Test>
+</TestSuite>
+<TestSuite name="TRickSQLConcurrencyTests">
+<Test name="Concurrent_IndependentSQLiteOperations_BothSucceed" result="PASS">
+</Test>
+<Test name="Concurrent_SQLiteAndPostgreSQL_WhenConfigured_BothSucceed" result="PASS">
+</Test>
+<Test name="Concurrent_SameSQLiteReaders_RepeatedOperationsComplete" result="PASS">
+</Test>
+<Test name="Concurrent_SQLiteWriteContention_ReturnsBusyAndRecovers" result="PASS">
+</Test>
+<Test name="Concurrent_SuccessAndFailure_RemainIsolated" result="PASS">
+</Test>
+</TestSuite>
+</TestSuite>
+<Statistics>
+<Stat name="Tests" result="217" />
+<Stat name="Failures" result="0" />
+<Stat name="Errors" result="0" />
+<Stat name="Success Rate" result="100%" />
+<Stat name="Finished At" result="20/09/2026 14:21:27" />
+<Stat name="Runtime" result="00:00:00" />
+</Statistics>
+</TestRun>

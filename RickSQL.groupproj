@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{9A22239F-38B1-4279-9BC2-B42A0C5787E0}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="RickConnection.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="tests\RickSQL.Tests.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="RickConnection">
+        <MSBuild Projects="RickConnection.dproj"/>
+    </Target>
+    <Target Name="RickConnection:Clean">
+        <MSBuild Projects="RickConnection.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="RickConnection:Make">
+        <MSBuild Projects="RickConnection.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="RickSQL_Tests">
+        <MSBuild Projects="tests\RickSQL.Tests.dproj"/>
+    </Target>
+    <Target Name="RickSQL_Tests:Clean">
+        <MSBuild Projects="tests\RickSQL.Tests.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="RickSQL_Tests:Make">
+        <MSBuild Projects="tests\RickSQL.Tests.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="RickConnection;RickSQL_Tests"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="RickConnection:Clean;RickSQL_Tests:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="RickConnection:Make;RickSQL_Tests:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

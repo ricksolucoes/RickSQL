@@ -173,8 +173,7 @@ RickSQL/
 ├── LICENSE
 ├── LICENSE-pt-BR
 ├── src/       # Delphi implementation and contracts
-├── NewTests/  # official suite for new refactorings: DUnit + GUI Test Runner
-├── tests/     # legacy compilation, unit, integration, memory, and concurrency suite
+├── tests/     # single official suite: DUnit + GUI Test Runner
 ├── samples/   # executable examples
 └── docs/      # centralized technical documentation
 ```
@@ -195,13 +194,21 @@ Detailed documentation is not distributed across `tests` and `samples`; the cano
 | Databases | [Supported databases](docs/bancos/BANCOS_SUPORTADOS.md) |
 | Libraries | [Client libraries](docs/bancos/BIBLIOTECAS_CLIENTE.md) |
 | Tests | [Tests and validation](docs/testes/TESTES_E_HOMOLOGACAO.md) |
+| Coverage | [Coverage matrix](docs/testes/MATRIZ_DE_COBERTURA.md) |
+| Architecture | [Confirmed architecture](docs/engenharia/ARQUITETURA.md) |
 | Engineering | [Toxicity control](docs/engenharia/CONTROLE_DE_TOXICIDADE.md) |
 
 ## 🧪 Tests
 
-The official suite for new refactorings and behavioral fixes lives under `NewTests/` and uses DUnit with the GUI Test Runner. Exception-normalization tests are under `NewTests/src/Error/`, SQL parameter validation/identification coverage under `NewTests/src/Validation/`, transaction coverage under `NewTests/src/Transaction/`, FireDAC provider verification under `NewTests/src/Infrastructure/`, canonical `VendorLib` application coverage under `NewTests/src/ClientLibrary/`, provider/definition reuse and normative Driver Factory/Informix contract coverage under `NewTests/src/Driver/`, and fluent lifecycle characterization under `NewTests/src/Facade/`. The `tests/` tree remains the legacy suite and reference material; `NewTests/` does not structurally depend on it.
+`tests/` is the project's **single official test suite**. It uses DUnit with `GUITestRunner` and runs the registered tests again in XML mode after the GUI closes, unless the executable is started with `/noxml`. Tests in this suite must therefore be idempotent.
 
-The current source registers **163 DUnit tests across ten classes** in each compilation configuration: `TRickSQLDriverContractTests` keeps five tests active per configuration, covering `Unknown`, the 13 supported engines, and the Informix contract for the applicable `FULL_EDITION` branch. The latest supplied DUnit GUI Test Runner evidence, finished at **2026-09-20 11:14:06**, records **163 tests**, all with `PASS` results, **0 failures**, **0 errors**, and a **100% success rate**. This execution includes all five `TRickSQLDriverContractTests`, providing real execution evidence for `Unknown`, supported-engine resolution, `Informix.DefaultPort = 9088`, and the Informix fallback behavior. Because the executed Informix tests are the fallback variants, this result evidences the configuration **without `FULL_EDITION`** and must not be extrapolated to the `FULL_EDITION` branch. The current Method Toxicity CSVs also include the driver-contract unit, so its new methods now have real RAD Studio measurement evidence. Details and evidence boundaries are centralized under [`docs/testes`](docs/testes/README.md) and [Toxicity control](docs/engenharia/CONTROLE_DE_TOXICIDADE.md).
+Open the test project through [`tests/RickSQL.Tests.dproj`](tests/RickSQL.Tests.dproj). Its `MainSource` is [`tests/RickSQL.Tests.dpr`](tests/RickSQL.Tests.dpr), and the generated test executable is `RickSQL.Tests.exe`.
+
+The latest validation supplied on **2026-09-20 14:21:27** executed the suite from its final `tests/` path with **217 tests**, **0 failures**, **0 errors**, and **100% success**. The two deterministic SQLite concurrency scenarios that replaced the legacy nondeterministic contract also passed: repeated concurrent readers and write contention reporting `SQLITE_BUSY` followed by recovery.
+
+This execution corresponds to the current branch **without `FULL_EDITION`**. Firebird/PostgreSQL tests are environment-conditional and return without accessing a server when the required variables are not configured; consequently, the global suite result does **not**, by itself, prove that external integrations were actually exercised. SQL Server and ODBC integration tests are compiled only with `FULL_EDITION`.
+
+No line-coverage percentage is claimed. The project criterion is explicit coverage decisions for every relevant responsibility under `src/`. See [Tests and validation](docs/testes/TESTES_E_HOMOLOGACAO.md), the [coverage matrix](docs/testes/MATRIZ_DE_COBERTURA.md), and [Toxicity control](docs/engenharia/CONTROLE_DE_TOXICIDADE.md).
 
 ## 📜 License
 

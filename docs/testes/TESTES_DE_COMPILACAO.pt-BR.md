@@ -1,55 +1,35 @@
-# Testes de compilação
+﻿# Contratos de compilação
 
-> [Voltar ao índice da documentação](../README.pt-BR.md)
+> [Voltar ao índice de testes](README.pt-BR.md)
 
-Os projetos executáveis estão em [`tests/compilacao`](../../tests/compilacao/). A pasta contém atualmente **18 projetos `.dpr`** e valida contratos públicos e internos do RickSQL.
+A suíte final não mantém mais projetos isolados em `tests/compilacao`. Os contratos anteriormente espalhados nesses executáveis foram migrados ou substituídos pela única suíte DUnit em `tests/`.
 
-## Projetos
+## O que o build da suíte verifica
 
-1. [`RickSQL.Models.CompilationTest.dpr`](../../tests/compilacao/RickSQL.Models.CompilationTest.dpr) — consumo dos models públicos por `Rick.SQL`.
-2. [`RickSQL.Driver.FactoryCompilationTest.dpr`](../../tests/compilacao/RickSQL.Driver.FactoryCompilationTest.dpr) — resolução de provider e `DriverID` para os valores de `TRickSQLDatabaseEngine`.
-3. [`RickSQL.Validators.ContractTest.dpr`](../../tests/compilacao/RickSQL.Validators.ContractTest.dpr) — contratos dos validadores de conexão, comando e parâmetros.
-4. [`RickSQL.PriorityDrivers.ContractTest.dpr`](../../tests/compilacao/RickSQL.PriorityDrivers.ContractTest.dpr) — contratos funcionais dos drivers prioritários; SQL Server, Oracle e ODBC dependem de `FULL_EDITION` para a implementação funcional.
-5. [`RickSQL.PriorityDrivers.PublicCompilationTest.dpr`](../../tests/compilacao/RickSQL.PriorityDrivers.PublicCompilationTest.dpr) — disponibilidade dos tipos públicos dos drivers prioritários por meio de `Rick.SQL`.
-6. [`RickSQL.ComplementaryDrivers.ContractTest.dpr`](../../tests/compilacao/RickSQL.ComplementaryDrivers.ContractTest.dpr) — resolução dos providers complementares.
-7. [`RickSQL.ClientLibrary.Resolver.ContractTest.dpr`](../../tests/compilacao/RickSQL.ClientLibrary.Resolver.ContractTest.dpr) — resolução e validação de bibliotecas clientes.
-8. [`RickSQL.Driver.Context.ContractTest.dpr`](../../tests/compilacao/RickSQL.Driver.Context.ContractTest.dpr) — criação e liberação do contexto do driver.
-9. [`RickSQL.FireDAC.Session.ContractTest.dpr`](../../tests/compilacao/RickSQL.FireDAC.Session.ContractTest.dpr) — ciclo de vida da sessão FireDAC.
-10. [`RickSQL.FireDAC.Connection.Query.ContractTest.dpr`](../../tests/compilacao/RickSQL.FireDAC.Connection.Query.ContractTest.dpr) — configuração de conexão e query.
-11. [`RickSQL.FireDAC.Parameter.Binder.ContractTest.dpr`](../../tests/compilacao/RickSQL.FireDAC.Parameter.Binder.ContractTest.dpr) — aplicação de parâmetros FireDAC.
-12. [`RickSQL.FireDAC.Transaction.ContractTest.dpr`](../../tests/compilacao/RickSQL.FireDAC.Transaction.ContractTest.dpr) — contratos de início, commit e rollback de transação.
-13. [`RickSQL.Error.Parser.ContractTest.dpr`](../../tests/compilacao/RickSQL.Error.Parser.ContractTest.dpr) — conversão de exceptions em `TRickSQLError`.
-14. [`RickSQL.DataSet.Materializer.ContractTest.dpr`](../../tests/compilacao/RickSQL.DataSet.Materializer.ContractTest.dpr) — materialização de dataset em memória.
-15. [`RickSQL.Open.Executor.ContractTest.dpr`](../../tests/compilacao/RickSQL.Open.Executor.ContractTest.dpr) — orquestração do fluxo de `Open`.
-16. [`RickSQL.Command.Executor.ContractTest.dpr`](../../tests/compilacao/RickSQL.Command.Executor.ContractTest.dpr) — orquestração do fluxo de `Execute`.
-17. [`RickSQL.Facade.ContractTest.dpr`](../../tests/compilacao/RickSQL.Facade.ContractTest.dpr) — contrato da fachada `Rick.SQL`.
-18. [`RickSQL.LibraryPath.FinalTest.dpr`](../../tests/compilacao/RickSQL.LibraryPath.FinalTest.dpr) — consumo final por Library/Search Path, sem package.
+Ao compilar `tests/RickSQL.Tests.dproj`, o compilador precisa resolver:
 
-## Expectativa legada divergente — Driver Factory
+- as duas APIs públicas (`Rick.SQL` e `Rick.SQL.Interf`);
+- models, validators e executors;
+- factory/provider/contexto de drivers;
+- services FireDAC;
+- parser/normalizador de erros;
+- materialização;
+- branches condicionais incluídos na configuração ativa;
+- todas as 16 units de teste registradas no runner.
 
-`RickSQL.Driver.FactoryCompilationTest.dpr` percorre cegamente `Low(TRickSQLDatabaseEngine)..High(TRickSQLDatabaseEngine)` e exige provider não nulo para todos os valores, incluindo `Unknown`. O contrato normativo atual trata `Unknown` como sentinela de ausência de engine operacional e `TRickSQLCoreDriverFactory.Resolve(Unknown)` retorna `nil`. A cobertura oficial em `NewTests/src/Driver/Rick.SQL.Tests.Driver.Contracts.pas` testa `Unknown` separadamente e enumera explicitamente os 13 engines suportados. O projeto legado permanece inalterado.
+Os antigos contratos de factory, validators, client library, driver context, sessão, conexão/query, binder, transaction, error parser, materializer, executors e fachada estão representados por testes DUnit contratuais ou funcionais. A [matriz final](MATRIZ_DE_COBERTURA.pt-BR.md) registra a decisão unit a unit.
 
-## Diretivas condicionais
+## Projeto atual
 
-Os providers de SQL Server, Oracle, DB2, SQL Anywhere, Informix e ODBC são condicionados a `FULL_EDITION`. Testes que exercitam métodos funcionais desses providers devem ser compilados com esse símbolo configurado em **Project > Options > Delphi Compiler > Conditional defines** ou por `-D`.
+- projeto: `tests/RickSQL.Tests.dproj`;
+- `MainSource`: `RickSQL.Tests.dpr`;
+- configuração padrão: `Debug`;
+- plataforma padrão: `Win32`;
+- define do runner VCL: `RICK_VCL_CONNECTION`;
+- `FULL_EDITION`: não definido no branch validado.
 
-Como esses testes são aplicações console, projetos que compilam `Rick.SQL.Core.ClientLibrary.Resolver` selecionam `FireDAC.ConsoleUI.Wait` automaticamente pelo símbolo `CONSOLE`; não é necessário define específico do RickSQL para esse provider.
+O projeto contém `ProjectVersion = 20.3`. A edição comercial exata do Delphi correspondente a esse número não é inferida: **Não confirmado.**
 
-## Library Path
+## Evidência
 
-Adicione ao `Library Path` ou `Search Path`:
-
-```text
-RickSQL\src
-RickSQL\src\model
-RickSQL\src\error
-RickSQL\src\core
-RickSQL\src\services
-RickSQL\src\services\drivers
-```
-
-Nenhum package ou componente visual deve ser instalado.
-
-## Resultado
-
-A lista acima descreve os projetos existentes. Compilação e execução bem-sucedidas somente podem ser registradas depois de executar o compilador/ambiente correspondente.
+A execução pós-migração do binário atualizado apresentou 217 testes registrados e executados no path final, sem failure/error. O log textual completo do compilador não foi anexado ao repositório; portanto, a documentação registra a execução real do artefato compilado e não inventa warnings/hints inexistentes.

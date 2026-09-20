@@ -1,30 +1,31 @@
-# Configuração de ambiente para os testes de integração
+﻿# Configuração do ambiente de testes
 
-> [Voltar ao índice da documentação](../README.pt-BR.md)
+> [Voltar ao índice de testes](README.pt-BR.md)
 
-Os projetos executáveis ficam em [`tests/integracao`](../../tests/integracao/). A documentação original dessa configuração foi centralizada aqui; as variáveis abaixo correspondem aos nomes utilizados pelos projetos atuais.
+## Projeto oficial
 
-## Library Path mínimo
+Abra `tests/RickSQL.Tests.dproj`. O arquivo referencia `RickSQL.Tests.dpr` como `MainSource`, usa `Debug`/`Win32` como defaults e define `RICK_VCL_CONNECTION`.
 
-```text
-RickSQL\src
-RickSQL\src\model
-RickSQL\src\error
-RickSQL\src\core
-RickSQL\src\services
-RickSQL\src\services\drivers
-RickSQL\tests\integracao
-```
+Fluxo recomendado para validação completa:
 
-Como os projetos legados desta seção são aplicações console, `Rick.SQL.Core.ClientLibrary.Resolver` seleciona `FireDAC.ConsoleUI.Wait` automaticamente por meio de `CONSOLE`; não é necessário define específico do RickSQL para esse provider.
+1. remover outputs antigos de `Win32\Debug` quando houver dúvida sobre artefato stale;
+2. executar **Build** do projeto;
+3. abrir/executar o DUnit GUI Test Runner;
+4. executar todos os testes registrados;
+5. verificar failures/errors na GUI;
+6. fechar a GUI para permitir a segunda execução XML;
+7. conferir `dunitx-results.xml`;
+8. usar `/noxml` apenas quando a segunda execução não for desejada durante diagnóstico local.
+
+A suíte precisa ser idempotente porque o fluxo normal executa os testes duas vezes.
 
 ## SQLite
 
-O teste SQLite não exige servidor externo. Ele cria um arquivo temporário no diretório temporário do Windows.
+Os cenários self-contained criam arquivos temporários e removem banco, journal, WAL e SHM quando aplicável. Não é necessário servidor SQLite. A suíte inclui diretamente as units do driver SQLite do FireDAC.
 
 ## Firebird
 
-Variáveis utilizadas:
+O teste externo só executa CRUD quando `RICKSQL_FIREBIRD_DATABASE` não está vazio. Variáveis lidas:
 
 ```text
 RICKSQL_FIREBIRD_SERVER
@@ -34,11 +35,9 @@ RICKSQL_FIREBIRD_PASSWORD
 RICKSQL_FIREBIRD_CLIENT_LIBRARY
 ```
 
-`RICKSQL_FIREBIRD_CLIENT_LIBRARY` é opcional quando a biblioteca cliente já estiver disponível no ambiente.
-
 ## PostgreSQL
 
-Variáveis utilizadas:
+Os testes externos usam:
 
 ```text
 RICKSQL_POSTGRESQL_SERVER
@@ -48,11 +47,24 @@ RICKSQL_POSTGRESQL_PASSWORD
 RICKSQL_POSTGRESQL_CLIENT_LIBRARY
 ```
 
-`RICKSQL_POSTGRESQL_CLIENT_LIBRARY` é opcional quando a biblioteca cliente já estiver disponível no ambiente.
+O cenário de concorrência entre SQLite e PostgreSQL também aceita a porta e aliases legados:
 
-## SQL Server
+```text
+RICKSQL_POSTGRESQL_PORT
+RICKSQL_PG_SERVER
+RICKSQL_PG_PORT
+RICKSQL_PG_DATABASE
+RICKSQL_PG_USER
+RICKSQL_PG_PASSWORD
+```
 
-Além das variáveis abaixo, o projeto deve ser compilado com `FULL_EDITION` nos *Conditional Defines*.
+Se nenhuma variável de banco PostgreSQL estiver configurada, o cenário condicional retorna sem acessar servidor.
+
+## `FULL_EDITION`
+
+No branch validado, `FULL_EDITION` não está definido. Quando definido, a classe de integração acrescenta:
+
+### SQL Server
 
 ```text
 RICKSQL_SQLSERVER_SERVER
@@ -61,21 +73,17 @@ RICKSQL_SQLSERVER_USERNAME
 RICKSQL_SQLSERVER_PASSWORD
 ```
 
-## ODBC
-
-Além das variáveis abaixo, o projeto deve ser compilado com `FULL_EDITION` nos *Conditional Defines*.
+### ODBC
 
 ```text
 RICKSQL_ODBC_DATASOURCE
 RICKSQL_ODBC_USERNAME
 RICKSQL_ODBC_PASSWORD
-RICKSQL_ODBC_SELECT_SQL
+RICKSQL_ODBC_SELECT_SQL   # opcional; default do teste: select 1 as codigo
 ```
 
-`RICKSQL_ODBC_SELECT_SQL` é opcional. Quando não informado, o teste usa `select 1 as codigo`.
+Execução real do branch `FULL_EDITION`: **Não confirmado.**
 
-## Permissões necessárias
+## Interpretação dos resultados
 
-Os testes externos criam e removem a tabela `ricksql_integracao`. Use banco de homologação ou base temporária apropriada ao ambiente.
-
-A configuração de credenciais e infraestrutura deve permanecer fora do repositório.
+Um método DUnit condicional pode aparecer como `PASS` mesmo quando retornou por falta de configuração. Antes de declarar uma integração externa aprovada, registre também a configuração utilizada e confirme que o método realmente alcançou o servidor.

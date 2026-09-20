@@ -1,50 +1,66 @@
-﻿# Documentação de testes
+﻿# Suíte oficial de testes
 
-> [Voltar ao índice da documentação](../README.pt-BR.md)
+> [Voltar ao índice](../README.pt-BR.md)
 
-O RickSQL mantém duas estruturas de testes com responsabilidades distintas:
+`tests/` é a única infraestrutura oficial de testes do RickSQL. A antiga suíte legada foi removida depois da aprovação do Quality Gate pré-migração, e a antiga pasta de transição `NewTests/` foi renomeada para `tests/`.
 
-- [`NewTests/`](../../NewTests/) — suíte oficial para novas refatorações e correções comportamentais, baseada em DUnit com GUI Test Runner;
-- [`tests/`](../../tests/) — suíte legada, preservada como material auxiliar, contratos históricos e cenários de compilação, integração, memória e concorrência.
-
-A suíte oficial está organizada atualmente assim:
+## Projeto
 
 ```text
-NewTests/
-├── RickSQL.NewTests.dpr
-├── RickSQL.NewTests.dproj
+tests/
+├── RickSQL.Tests.dproj       # arquivo de projeto Delphi
+├── RickSQL.Tests.dpr         # MainSource
+├── RickSQL.Tests.res
 └── src/
     ├── ClientLibrary/
-    │   └── Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas
+    ├── Concurrency/
     ├── Driver/
-    │   ├── Rick.SQL.Tests.Driver.Contracts.pas
-    │   └── Rick.SQL.Tests.Driver.ProviderReuse.pas
     ├── Error/
-    │   ├── Rick.SQL.Tests.Error.Integration.pas
-    │   └── Rick.SQL.Tests.Error.Normalizer.pas
-    ├── Infrastructure/
-    │   └── Rick.SQL.Tests.FireDAC.WaitProvider.pas
     ├── Facade/
-    │   └── Rick.SQL.Tests.Fluent.Lifecycle.pas
+    ├── Infrastructure/
+    ├── Integration/
     ├── Materialization/
-    │   └── Rick.SQL.Tests.DataSet.Materializer.pas
+    ├── Model/
+    ├── Service/
     ├── Transaction/
-    │   └── Rick.SQL.Tests.Transaction.pas
     └── Validation/
-        └── Rick.SQL.Tests.Parameter.Validator.pas
 ```
 
-O projeto `RickSQL.NewTests` consome a implementação de produção em `../src` e não depende estruturalmente de `tests/`.
+O projeto de testes está integralmente consolidado como `RickSQL.Tests.dproj`, com `MainSource=RickSQL.Tests.dpr`; o executável gerado é `RickSQL.Tests.exe`.
 
-A suíte fonte atual registra **163 testes DUnit em dez classes** em cada configuração de compilação. `TRickSQLDriverContractTests` acrescenta cinco testes ativos por configuração para distinguir `Unknown` dos 13 engines suportados e validar `Informix` conforme o branch de `FULL_EDITION`. A evidência mais recente fornecida do DUnit GUI Test Runner, finalizada em **20/09/2026 11:14:06**, registra **163 testes**, todos `PASS`, com **0 falhas**, **0 erros** e **100% de sucesso**. A execução inclui os cinco testes de contratos de driver. Os nomes dos testes de Informix executados correspondem às variantes fallback, portanto essa evidência cobre a configuração **sem `FULL_EDITION`**; o branch `FULL_EDITION` permanece sem evidência de execução atual. Os detalhes e os limites estão em [Testes e homologação](TESTES_E_HOMOLOGACAO.pt-BR.md).
+## Runner
 
-A documentação detalhada da suíte legada permanece separada por finalidade:
+O projeto usa DUnit clássico com `GUITestRunner`. Depois que a janela GUI é fechada, `XMLTestRunner.RunRegisteredTests` executa a suíte novamente e grava `dunitx-results.xml` ao lado do executável. O switch `/noxml` desativa somente essa segunda execução.
 
-- [Testes de compilação](TESTES_DE_COMPILACAO.pt-BR.md)
-- [Testes unitários](TESTES_UNITARIOS.pt-BR.md)
-- [Testes de integração](TESTES_DE_INTEGRACAO.pt-BR.md)
-- [Configuração do ambiente](CONFIGURACAO_AMBIENTE.pt-BR.md)
-- [Testes de memória](TESTES_DE_MEMORIA.pt-BR.md)
-- [Testes de concorrência](TESTES_DE_CONCORRENCIA.pt-BR.md)
+Consequência operacional: cada teste deve ser self-contained, idempotente e capaz de executar duas vezes seguidas sem depender de ordem ou resíduos da execução anterior.
 
-Resultados registrados para `NewTests/` não devem ser extrapolados automaticamente para a suíte legada ou para cenários que não foram executados.
+## Resultado pós-migração
+
+A evidência local fornecida em 20/09/2026 14:21:27 registra:
+
+- 217 testes executados;
+- 217 passes;
+- 0 failures;
+- 0 errors;
+- 100% de sucesso;
+- execução no path final `tests/`;
+- branch sem `FULL_EDITION`.
+
+O resultado inclui os dois cenários determinísticos que substituíram o antigo teste SQLite reader/writer flakey: `Concurrent_SameSQLiteReaders_RepeatedOperationsComplete` e `Concurrent_SQLiteWriteContention_ReturnsBusyAndRecovers`.
+
+## O que o resultado não comprova
+
+Os testes de Firebird e PostgreSQL retornam imediatamente quando as variáveis de ambiente mínimas não estão configuradas. Assim, um `PASS` nesses métodos não prova que um servidor externo foi acessado. SQL Server e ODBC são compilados na classe de integração apenas sob `FULL_EDITION`. Execução real dessas integrações externas: **Não confirmado.**
+
+Também não é declarado percentual de cobertura de linhas nem ausência de memory leaks. A cobertura é orientada a responsabilidade; lifecycle é validado funcionalmente, enquanto medição de leak exige ferramenta específica. O resultado 217/217 corresponde ao branch `RICK_VCL_CONNECTION` sem `FULL_EDITION`; branches `FULL_EDITION`, `CONSOLE` e `RICK_FMX_CONNECTION` não são considerados executados por essa evidência.
+
+## Documentos relacionados
+
+- [Testes e homologação](TESTES_E_HOMOLOGACAO.pt-BR.md)
+- [Matriz de cobertura](MATRIZ_DE_COBERTURA.pt-BR.md)
+- [Testes unitários/contratuais](TESTES_UNITARIOS.pt-BR.md)
+- [Integração](TESTES_DE_INTEGRACAO.pt-BR.md)
+- [Concorrência](TESTES_DE_CONCORRENCIA.pt-BR.md)
+- [Lifecycle e memória](TESTES_DE_MEMORIA.pt-BR.md)
+- [Contratos de compilação](TESTES_DE_COMPILACAO.pt-BR.md)
+- [Configuração de ambiente](CONFIGURACAO_AMBIENTE.pt-BR.md)

@@ -2,7 +2,7 @@
 
 > [Voltar ao índice da documentação](../README.pt-BR.md)
 
-Este guia descreve como integrar o código-fonte do RickSQL a um projeto Delphi. A implementação permanece em `src/`; a documentação foi centralizada em `docs/`; os exemplos executáveis ficam em `samples/`; a suíte oficial de novas refatorações fica em `NewTests/`; e `tests/` permanece como suíte legada.
+Este guia descreve como integrar o código-fonte do RickSQL a um projeto Delphi. A implementação permanece em `src/`; a documentação fica em `docs/`; os exemplos executáveis ficam em `samples/`; e `tests/` é a única suíte oficial DUnit.
 
 ## Estrutura de pastas
 
@@ -18,51 +18,10 @@ RickSQL/
     Rick.SQL.pas
     Rick.SQL.Interf.pas
     model/
-      Rick.SQL.Model.Types.pas
-      Rick.SQL.Model.Connection.Options.pas
-      Rick.SQL.Model.Command.Options.pas
-      Rick.SQL.Model.Command.pas
-      Rick.SQL.Model.Parameter.pas
-      Rick.SQL.Model.Error.pas
-      Rick.SQL.Model.Execution.Result.pas
-      Rick.SQL.Model.Driver.Definition.pas
-      Rick.SQL.Model.Contracts.pas
     error/
-      Rick.SQL.Error.Normalizer.pas
     core/
-      Rick.SQL.Core.Connection.Validator.pas
-      Rick.SQL.Core.Command.Validator.pas
-      Rick.SQL.Core.Parameter.Validator.pas
-      Rick.SQL.Core.Driver.Factory.pas
-      Rick.SQL.Core.Driver.Context.Factory.pas
-      Rick.SQL.Core.ClientLibrary.Resolver.pas
-      Rick.SQL.Core.DataSet.Materializer.pas
-      Rick.SQL.Core.Error.Parser.pas
-      Rick.SQL.Core.Open.Executor.pas
-      Rick.SQL.Core.Command.Executor.pas
     services/
-      Rick.SQL.Service.FireDAC.Session.pas
-      Rick.SQL.Service.FireDAC.Connection.pas
-      Rick.SQL.Service.FireDAC.Query.pas
-      Rick.SQL.Service.FireDAC.Parameter.Binder.pas
-      Rick.SQL.Service.FireDAC.Transaction.pas
       drivers/
-        Rick.SQL.Service.FireDAC.Driver.Base.pas
-        Rick.SQL.Service.FireDAC.Driver.Context.pas
-        Rick.SQL.Service.FireDAC.Driver.VendorLibrary.pas
-        Rick.SQL.Service.FireDAC.Driver.Firebird.pas
-        Rick.SQL.Service.FireDAC.Driver.InterBase.pas
-        Rick.SQL.Service.FireDAC.Driver.PostgreSQL.pas
-        Rick.SQL.Service.FireDAC.Driver.MSSQL.pas
-        Rick.SQL.Service.FireDAC.Driver.MySQL.pas
-        Rick.SQL.Service.FireDAC.Driver.SQLite.pas
-        Rick.SQL.Service.FireDAC.Driver.Oracle.pas
-        Rick.SQL.Service.FireDAC.Driver.DB2.pas
-        Rick.SQL.Service.FireDAC.Driver.SQLAnywhere.pas
-        Rick.SQL.Service.FireDAC.Driver.Informix.pas
-        Rick.SQL.Service.FireDAC.Driver.Advantage.pas
-        Rick.SQL.Service.FireDAC.Driver.Access.pas
-        Rick.SQL.Service.FireDAC.Driver.ODBC.pas
   docs/
     README.md
     README.pt-BR.md
@@ -71,27 +30,23 @@ RickSQL/
     bancos/
     testes/
     engenharia/
-  NewTests/
-    RickSQL.NewTests.dpr
-    RickSQL.NewTests.dproj
+  tests/
+    RickSQL.Tests.dproj
+    RickSQL.Tests.dpr
+    RickSQL.Tests.res
     src/
       ClientLibrary/
-        Rick.SQL.Tests.ClientLibrary.VendorLibrary.pas
+      Concurrency/
+      Driver/
       Error/
-        Rick.SQL.Tests.Error.Integration.pas
-        Rick.SQL.Tests.Error.Normalizer.pas
+      Facade/
       Infrastructure/
-        Rick.SQL.Tests.FireDAC.WaitProvider.pas
+      Integration/
+      Materialization/
+      Model/
+      Service/
       Transaction/
-        Rick.SQL.Tests.Transaction.pas
       Validation/
-        Rick.SQL.Tests.Parameter.Validator.pas
-  tests/                  # legado
-    compilacao/
-    unitarios/
-    integracao/
-    memoria/
-    concorrencia/
   samples/
     Interface/
     console/
@@ -236,13 +191,17 @@ A seleção segue este contrato:
 
 Aplicações console não precisam de define específico do RickSQL. Aplicações VCL devem definir `RICK_VCL_CONNECTION`, e aplicações FMX devem definir `RICK_FMX_CONNECTION`, no nível do projeto. Os símbolos `RICK_VCL_CONNECTION` e `RICK_FMX_CONNECTION` são mutuamente exclusivos. Em uma aplicação não-console, a ausência de ambos provoca erro de compilação.
 
-O sample console usa `CONSOLE` automaticamente; o sample FMX define `RICK_FMX_CONNECTION`; o `NewTests`, por ser VCL, define `RICK_VCL_CONNECTION`. No sample de serviço Windows, Debug é console e Release define `RICK_VCL_CONNECTION`, coerente com o host baseado em `Vcl.SvcMgr`.
+O sample console usa `CONSOLE` automaticamente; o sample FMX define `RICK_FMX_CONNECTION`; o projeto oficial em `tests/`, por ser VCL, define `RICK_VCL_CONNECTION`. No sample de serviço Windows, Debug é console e Release define `RICK_VCL_CONNECTION`, coerente com o host baseado em `Vcl.SvcMgr`.
 
 ### Providers condicionais — `FULL_EDITION`
 
 As implementações de SQL Server, Oracle, DB2, SQL Anywhere, Informix e ODBC são compiladas sob `FULL_EDITION`. Para utilizar esses mecanismos, adicione `FULL_EDITION` aos *Conditional Defines* do projeto consumidor. Sem o símbolo, a factory ainda resolve os providers, mas suas operações de configuração/validação retornam a exigência de `FULL_EDITION`.
 
 Os providers de SQLite, Firebird, InterBase, PostgreSQL, MySQL, Advantage e Access não utilizam essa condição.
+
+## Suíte oficial de testes
+
+A validação do framework fica em `tests/RickSQL.Tests.dproj`. O `MainSource` é `RickSQL.Tests.dpr`; o runner usa DUnit GUI e executa novamente a suíte em modo XML após o fechamento da janela. Consulte [Testes e homologação](../testes/TESTES_E_HOMOLOGACAO.pt-BR.md).
 
 ## Fluxo recomendado de uso
 

@@ -1,33 +1,15 @@
-# Testes de memória do RickSQL
+﻿# Lifecycle, ownership e memória
 
-> [Voltar ao índice da documentação](../README.pt-BR.md)
+> [Voltar ao índice de testes](README.pt-BR.md)
 
-Os projetos executáveis ficam em [`tests/memoria`](../../tests/memoria/) e habilitam `ReportMemoryLeaksOnShutdown` para que o Delphi reporte leaks observáveis ao encerramento do processo.
+A suíte final não possui uma pasta separada `tests/memoria`. Os contratos de lifecycle/ownership foram consolidados nas classes que exercitam a responsabilidade real.
 
-## Objetivo
+Cobertura principal:
 
-Exercitar repetidamente recursos envolvidos nas operações do framework, incluindo contexto/driver, conexão, query, dataset materializado, erros estruturados e arrays de parâmetros.
+- `TRickSQLFluentLifecycleTests`: ownership do dataset, `Open -> Open`, `Open -> Execute`, destrutor, `Owner(True/False)` e isolamento de instâncias;
+- `TRickSQLDataSetMaterializerTests`: dataset materializado permanece utilizável após liberar a sessão interna;
+- `TRickSQLFireDACServiceTests`: criação/lifetime de session, connection e query;
+- `TRickSQLDriverContractTests`/`VendorLibraryTests`: ownership do driver link/contexto;
+- `TRickSQLTransactionTests`: encerramento e diagnóstico de transações.
 
-O harness não instrumenta cada tipo interno individualmente. Portanto, o teste pode evidenciar leaks reportados pelo runtime, mas a documentação não deve afirmar separadamente que cada classe foi liberada sem uma execução e instrumentação compatíveis.
-
-## Testes disponíveis
-
-### [`RickSQL.Memoria.SQLite.Test.dpr`](../../tests/memoria/RickSQL.Memoria.SQLite.Test.dpr)
-
-Executa ciclos repetidos de criação de banco SQLite temporário, criação de tabela, inserção de registros, consulta e liberação do dataset retornado. Esse fluxo força criação e destruição repetida dos componentes internos envolvidos.
-
-### [`RickSQL.Memoria.Parametros.Test.dpr`](../../tests/memoria/RickSQL.Memoria.Parametros.Test.dpr)
-
-Cria um comando com grande quantidade de parâmetros para exercitar arrays dinâmicos e seu encerramento de escopo.
-
-## Execução
-
-Configure as pastas do RickSQL no `Library Path` ou `Search Path` e compile o projeto correspondente no Delphi aplicável.
-
-Cada teste ativa:
-
-```pascal
-ReportMemoryLeaksOnShutdown := True;
-```
-
-Um relatório de leak somente pode ser avaliado após a execução real do binário. A ausência de relatório não foi medida durante esta reorganização documental.
+Esses testes validam lifecycle funcional. **Não foi executado detector de memory leaks nesta tarefa.** Portanto, não se declara que o projeto esteja livre de vazamentos de memória.

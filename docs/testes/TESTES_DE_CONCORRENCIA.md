@@ -1,41 +1,9 @@
-# RickSQL Concurrency Tests
+﻿# Concurrency tests
 
-> [Back to the documentation index](../README.md)
+> [Back to the test index](README.md)
 
-The executable projects are located under [`tests/concorrencia`](../../tests/concorrencia/) and exercise concurrent RickSQL operations.
+`TRickSQLConcurrencyTests` contains five scenarios in the official project. Each thread creates its own RickSQL operation/FireDAC session; the framework connection is not shared across threads.
 
-## Purpose
+The final scenarios cover independent SQLite databases, conditional SQLite+PostgreSQL execution, repeated concurrent readers on one SQLite file, deterministic SQLite write contention (`SQLITE_BUSY`) followed by successful recovery after lock release, and isolation between simultaneous success/failure operations.
 
-Validate observable behavior when operations run in parallel: query/command results, isolation of a failing operation, and execution against different databases when the external environment is available.
-
-The current tests do not instrument the identity of the connection, query, driver context, or transaction to prove individually that every internal object is distinct. That conclusion must not be inferred solely from concurrent execution.
-
-## Available tests
-
-### [`RickSQL.Concorrencia.SQLite.Test.dpr`](../../tests/concorrencia/RickSQL.Concorrencia.SQLite.Test.dpr)
-
-Runs concurrent queries and commands against a temporary SQLite database.
-
-### [`RickSQL.Concorrencia.FalhaIsolada.Test.dpr`](../../tests/concorrencia/RickSQL.Concorrencia.FalhaIsolada.Test.dpr)
-
-Runs one valid query and one invalid query in parallel, checking the observable isolation behavior between the two flows.
-
-### [`RickSQL.Concorrencia.BancosDiferentes.Test.dpr`](../../tests/concorrencia/RickSQL.Concorrencia.BancosDiferentes.Test.dpr)
-
-Runs concurrent operations against SQLite and PostgreSQL.
-
-Environment variables used by the project:
-
-```text
-RICKSQL_PG_SERVER
-RICKSQL_PG_PORT
-RICKSQL_PG_DATABASE
-RICKSQL_PG_USER
-RICKSQL_PG_PASSWORD
-```
-
-If `RICKSQL_PG_DATABASE` is not configured, the test itself contains an exit path that prints a message to the console.
-
-## Results
-
-This documentation describes the scenarios present in the source tree. Success, failure, or thread-safety guarantees depend on actual execution and analysis in the target environment.
+The legacy expectation that repeated SQLite read/write operations must always both succeed was replaced because it proved timing-dependent and legitimately produced `SQLITE_BUSY`/`SQLITE_BUSY_RECOVERY`. No automatic retry, global mutex, or production change was introduced merely to make the test green. No global thread-safety claim is made beyond the exercised contracts.

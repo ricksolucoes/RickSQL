@@ -1,41 +1,19 @@
-# Testes de concorrência do RickSQL
+﻿# Testes de concorrência
 
-> [Voltar ao índice da documentação](../README.pt-BR.md)
+> [Voltar ao índice de testes](README.pt-BR.md)
 
-Os projetos executáveis ficam em [`tests/concorrencia`](../../tests/concorrencia/) e exercitam operações simultâneas do RickSQL.
+A classe `TRickSQLConcurrencyTests` contém cinco cenários no projeto oficial. Cada thread usa sua própria operação RickSQL/sessão FireDAC; o teste não compartilha uma `TFDConnection` do framework entre threads.
 
-## Objetivo
+## Cenários finais
 
-Validar o comportamento observável quando operações são executadas em paralelo: resultado das consultas/comandos, isolamento de uma falha e execução com bancos distintos quando o ambiente externo está disponível.
+1. `Concurrent_IndependentSQLiteOperations_BothSucceed`: dois bancos SQLite independentes executam em paralelo.
+2. `Concurrent_SQLiteAndPostgreSQL_WhenConfigured_BothSucceed`: SQLite local e PostgreSQL em paralelo, somente quando PostgreSQL está configurado.
+3. `Concurrent_SameSQLiteReaders_RepeatedOperationsComplete`: dois readers executam repetidamente no mesmo arquivo SQLite e ambos devem concluir.
+4. `Concurrent_SQLiteWriteContention_ReturnsBusyAndRecovers`: uma conexão de controle mantém write lock; `TRickSQL.Execute` deve retornar erro estruturado cujo código base é `SQLITE_BUSY`, e uma nova escrita deve funcionar depois que o lock é liberado.
+5. `Concurrent_SuccessAndFailure_RemainIsolated`: operação válida e operação inválida simultâneas mantêm resultados independentes.
 
-Os testes atuais não instrumentam a identidade de conexão, query, contexto de driver ou transação para provar individualmente que cada objeto interno é distinto; essa conclusão não deve ser inferida apenas da execução concorrente.
+## Contrato legado substituído
 
-## Testes disponíveis
+A suíte antiga continha a expectativa de que leitura e escrita repetidas no mesmo SQLite deveriam sempre terminar com sucesso. Durante a migração esse cenário mostrou resultados dependentes de timing (`SQLITE_BUSY`/`SQLITE_BUSY_RECOVERY`). O contrato foi classificado como não determinístico para SQLite e substituído pelos dois cenários acima: concorrência de readers e contenção de writer com recuperação.
 
-### [`RickSQL.Concorrencia.SQLite.Test.dpr`](../../tests/concorrencia/RickSQL.Concorrencia.SQLite.Test.dpr)
-
-Executa consultas e comandos simultâneos sobre um banco SQLite temporário.
-
-### [`RickSQL.Concorrencia.FalhaIsolada.Test.dpr`](../../tests/concorrencia/RickSQL.Concorrencia.FalhaIsolada.Test.dpr)
-
-Executa uma consulta válida e uma consulta inválida em paralelo, verificando o comportamento observável de isolamento entre os dois fluxos.
-
-### [`RickSQL.Concorrencia.BancosDiferentes.Test.dpr`](../../tests/concorrencia/RickSQL.Concorrencia.BancosDiferentes.Test.dpr)
-
-Executa operações simultâneas em SQLite e PostgreSQL.
-
-Variáveis utilizadas pelo projeto:
-
-```text
-RICKSQL_PG_SERVER
-RICKSQL_PG_PORT
-RICKSQL_PG_DATABASE
-RICKSQL_PG_USER
-RICKSQL_PG_PASSWORD
-```
-
-Se `RICKSQL_PG_DATABASE` não estiver configurada, o próprio teste possui caminho de saída com mensagem no console.
-
-## Resultado
-
-A documentação descreve os cenários presentes. Sucesso, falha ou garantias de thread safety dependem de execução e análise reais no ambiente alvo.
+Não foi introduzido retry automático, mutex global ou alteração de produção apenas para tornar o teste verde. Também não é feita afirmação de thread safety global; os cenários validam somente os comportamentos exercitados.

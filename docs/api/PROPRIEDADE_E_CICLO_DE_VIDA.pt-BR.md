@@ -1,4 +1,4 @@
-# Propriedade e ciclo de vida
+﻿# Propriedade e ciclo de vida
 
 > [Voltar ao índice da documentação](../README.pt-BR.md)
 
@@ -136,15 +136,10 @@ Nenhuma transação deve permanecer aberta após o encerramento de um comando: `
 
 O método `TRickSQLServiceFireDACTransaction.Active` mantém o contrato Boolean histórico para compatibilidade, inclusive retornando `False` quando a inspeção lança exception. Os fluxos internos de `Start`, `Commit`, `Rollback` e `RollbackAfterFailure` não dependem desse comportamento ambíguo.
 
-## Memória
+## Memória e lifecycle
 
-Os testes de memória, localizados em `tests/memoria`, validam:
+A suíte oficial não possui mais uma pasta separada `tests/memoria`. Os contratos de lifetime/ownership estão consolidados nas classes correspondentes em `tests/src/`: lifecycle fluent, materialização, services FireDAC, drivers/client library e transações.
 
-- criação e destruição repetida de sessão;
-- materialização e liberação do dataset retornado por `Open`;
-- arrays de parâmetros (`TRickSQLParameterArray`) com crescimento dinâmico;
-- erros internos convertidos para `TRickSQLError`;
-- transações (início, commit e rollback);
-- driver link e contexto do driver.
+A cobertura funcional valida criação/liberação de sessão, dataset materializado independente, ownership da API fluent, contexto/driver link e encerramento transacional. **Não foi executada ferramenta de detecção de memory leaks nesta tarefa**; portanto, não se declara ausência de vazamentos.
 
-Consulte [`TESTES_E_HOMOLOGACAO.md`](../testes/TESTES_E_HOMOLOGACAO.pt-BR.md) para o detalhamento dos cenários de teste.
+Consulte [Testes e homologação](../testes/TESTES_E_HOMOLOGACAO.pt-BR.md) e [Lifecycle, ownership e memória](../testes/TESTES_DE_MEMORIA.pt-BR.md).
